@@ -19,7 +19,7 @@ Una extensión de Chrome potente y fácil de usar que traduce cualquier texto al
 
 - Google Chrome o Chromium (versión 88+)
 - Conexión a Internet
-- API Key de Groq (incluida)
+- API Key de Groq (no incluida)
 
 ## 🚀 Instalación
 

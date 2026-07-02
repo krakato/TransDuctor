@@ -1,4 +1,4 @@
-// Elementos del DOM
+// Elementos del DOM con validación
 const enableToggle = document.getElementById("enableToggle");
 const targetLanguageSelect = document.getElementById("targetLanguage");
 const hoverDelaySlider = document.getElementById("hoverDelay");
@@ -11,6 +11,11 @@ const resetSettingsBtn = document.getElementById("resetSettings");
 const statusMessage = document.getElementById("statusMessage");
 const groqApiKeyInput = document.getElementById("groqApiKey");
 const toggleApiKeyVisibilityBtn = document.getElementById("toggleApiKeyVisibility");
+
+// Validar que todos los elementos existan
+if (!enableToggle || !targetLanguageSelect || !groqApiKeyInput) {
+  console.error("Error: No se pudieron encontrar los elementos del DOM del popup");
+}
 
 // Valores por defecto
 const defaultSettings = {
@@ -57,74 +62,99 @@ function saveSettings() {
 
 // Mostrar mensaje de estado
 function showMessage(message, type = "info") {
+  if (!statusMessage) return;
   statusMessage.textContent = message;
   statusMessage.className = "status-message " + type;
 
   setTimeout(() => {
-    statusMessage.textContent = "";
-    statusMessage.className = "status-message";
+    if (statusMessage) {
+      statusMessage.textContent = "";
+      statusMessage.className = "status-message";
+    }
   }, 3000);
 }
 
-// Event Listeners
-enableToggle.addEventListener("change", saveSettings);
-targetLanguageSelect.addEventListener("change", saveSettings);
-themeSelect.addEventListener("change", saveSettings);
+// Helper para agregar event listeners de forma segura
+function safeAddListener(element, event, callback) {
+  if (element) {
+    element.addEventListener(event, callback);
+  }
+}
 
-hoverDelaySlider.addEventListener("input", (e) => {
-  hoverDelayValue.textContent = e.target.value + "ms";
-  saveSettings();
-});
+// Event Listeners (con validación)
+safeAddListener(enableToggle, "change", saveSettings);
+safeAddListener(targetLanguageSelect, "change", saveSettings);
+safeAddListener(themeSelect, "change", saveSettings);
 
-fontSizeSlider.addEventListener("input", (e) => {
-  fontSizeValue.textContent = e.target.value + "px";
-  saveSettings();
-});
+if (hoverDelaySlider) {
+  hoverDelaySlider.addEventListener("input", (e) => {
+    if (hoverDelayValue) {
+      hoverDelayValue.textContent = e.target.value + "ms";
+    }
+    saveSettings();
+  });
+}
+
+if (fontSizeSlider) {
+  fontSizeSlider.addEventListener("input", (e) => {
+    if (fontSizeValue) {
+      fontSizeValue.textContent = e.target.value + "px";
+    }
+    saveSettings();
+  });
+}
 
 // Guardar cambios en la clave API
-groqApiKeyInput.addEventListener("change", saveSettings);
+safeAddListener(groqApiKeyInput, "change", saveSettings);
 
 // Toglear visibilidad de la clave API
-toggleApiKeyVisibilityBtn.addEventListener("click", () => {
-  const isPassword = groqApiKeyInput.type === "password";
-  groqApiKeyInput.type = isPassword ? "text" : "password";
-  toggleApiKeyVisibilityBtn.textContent = isPassword ? "🙈" : "👁️";
-});
+if (toggleApiKeyVisibilityBtn && groqApiKeyInput) {
+  toggleApiKeyVisibilityBtn.addEventListener("click", () => {
+    const isPassword = groqApiKeyInput.type === "password";
+    groqApiKeyInput.type = isPassword ? "text" : "password";
+    toggleApiKeyVisibilityBtn.textContent = isPassword ? "🙈" : "👁️";
+  });
+}
 
 // Probar traducción
-testTranslateBtn.addEventListener("click", async () => {
-  testTranslateBtn.disabled = true;
-  testTranslateBtn.textContent = "⌛ Traduciendo...";
+if (testTranslateBtn) {
+  testTranslateBtn.addEventListener("click", async () => {
+    testTranslateBtn.disabled = true;
+    testTranslateBtn.textContent = "⌛ Traduciendo...";
 
-  try {
-    const response = await chrome.runtime.sendMessage({
-      action: "translate",
-      text: "Hello world! This is a translation test.",
-      targetLanguage: targetLanguageSelect.value
-    });
+    try {
+      if (!targetLanguageSelect) return;
+      const response = await chrome.runtime.sendMessage({
+        action: "translate",
+        text: "Hello world! This is a translation test.",
+        targetLanguage: targetLanguageSelect.value
+      });
 
-    if (response.success) {
-      showMessage(`✓ Traducción: "${response.translation}"`, "success");
-    } else {
-      showMessage(`❌ Error: ${response.error}`, "error");
+      if (response && response.success) {
+        showMessage(`✓ Traducción: "${response.translation}"`, "success");
+      } else {
+        showMessage(`❌ Error: ${response?.error || "Sin respuesta"}`, "error");
+      }
+    } catch (error) {
+      showMessage(`❌ Error: ${error.message}`, "error");
+    } finally {
+      testTranslateBtn.disabled = false;
+      testTranslateBtn.textContent = "🧪 Probar traducción";
     }
-  } catch (error) {
-    showMessage(`❌ Error: ${error.message}`, "error");
-  } finally {
-    testTranslateBtn.disabled = false;
-    testTranslateBtn.textContent = "🧪 Probar traducción";
-  }
-});
+  });
+}
 
 // Restaurar valores por defecto
-resetSettingsBtn.addEventListener("click", () => {
-  if (confirm("¿Restaurar todos los valores por defecto?")) {
-    chrome.storage.sync.set(defaultSettings, () => {
-      loadSettings();
-      showMessage("✓ Valores restaurados", "success");
-    });
-  }
-});
+if (resetSettingsBtn) {
+  resetSettingsBtn.addEventListener("click", () => {
+    if (confirm("¿Restaurar todos los valores por defecto?")) {
+      chrome.storage.sync.set(defaultSettings, () => {
+        loadSettings();
+        showMessage("✓ Valores restaurados", "success");
+      });
+    }
+  });
+}
 
 // Cargar configuración al abrir
 loadSettings();

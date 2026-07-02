@@ -169,6 +169,11 @@ document.addEventListener(
 
     const element = event.target;
 
+    // Validar que sea un Element node (no TEXT_NODE)
+    if (!element || element.nodeType !== Node.ELEMENT_NODE) {
+      return;
+    }
+
     // Filtrar elementos que no queremos traducir
     if (
       element.tagName === "SCRIPT" ||

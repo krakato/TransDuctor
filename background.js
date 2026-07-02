@@ -92,17 +92,22 @@ Reglas importantes:
   }
 }
 
-// Limpiar caché antigua cada 24 horas
-chrome.alarms.create("cleanTranslationCache", { periodInMinutes: 24 * 60 });
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === "cleanTranslationCache") {
+// Limpiar caché antigua (Manifest V3 no soporta alarms, se limpia manualmente)
+// Esta función se llama cuando hay una traducción
+function limpiarCacheAntiguo() {
+  try {
+    if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) {
+      return;
+    }
+    
     chrome.storage.local.get(["translationCache"], (result) => {
-      const cache = result.translationCache || {};
+      if (!result.translationCache) return;
+      const cache = result.translationCache;
       const now = Date.now();
       let cleaned = false;
       
       for (let key in cache) {
-        if (now - cache[key].timestamp > 24 * 60 * 60 * 1000) {
+        if (cache[key]?.timestamp && now - cache[key].timestamp > 24 * 60 * 60 * 1000) {
           delete cache[key];
           cleaned = true;
         }
@@ -112,5 +117,10 @@ chrome.alarms.onAlarm.addListener((alarm) => {
         chrome.storage.local.set({ translationCache: cache });
       }
     });
+  } catch (e) {
+    console.warn("Error limpiando caché:", e);
   }
-});
+}
+
+// Limpiar caché al cargar el service worker
+limpiarCacheAntiguo();
