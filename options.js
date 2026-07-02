@@ -1,4 +1,5 @@
 // Elementos del DOM
+const backBtn = document.getElementById("backBtn");
 const enabledCheckbox = document.getElementById("enabled");
 const targetLanguageSelect = document.getElementById("targetLanguage");
 const hoverDelaySlider = document.getElementById("hoverDelay");
@@ -13,6 +14,13 @@ const importSettingsBtn = document.getElementById("importSettings");
 const resetAllBtn = document.getElementById("resetAll");
 const statusMessage = document.getElementById("statusMessage");
 const fileInput = document.getElementById("fileInput");
+
+// Manejador del botón volver
+if (backBtn) {
+  backBtn.addEventListener("click", () => {
+    history.back();
+  });
+}
 
 // Valores por defecto
 const defaultSettings = {
