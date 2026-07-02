@@ -1,0 +1,23 @@
+<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="60" fill="url(#grad3)" opacity="0.95"/>
+  
+  <!-- Globe with language symbols -->
+  <circle cx="64" cy="64" r="50" fill="#ffffff" opacity="0.1" stroke="#ffffff" stroke-width="2"/>
+  
+  <!-- Globe outline -->
+  <path d="M 35 64 A 29 29 0 0 1 93 64 A 29 29 0 0 1 35 64" fill="none" stroke="#ffffff" stroke-width="2"/>
+  
+  <!-- Language symbols inside -->
+  <text x="64" y="70" font-size="28" font-weight="bold" text-anchor="middle" fill="#ffffff" font-family="Arial">A↔Z</text>
+  
+  <!-- Glow effect -->
+  <circle cx="64" cy="64" r="60" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.5" r="62"/>
+</svg>

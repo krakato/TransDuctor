@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Prueba - TransDuctor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #999;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        section {
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            color: #667eea;
+            font-size: 18px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        p, li {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        ul {
+            margin-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin-bottom: 20px;
+        }
+
+        .code {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #333;
+            overflow-x: auto;
+            margin-bottom: 12px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .test-area {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px dashed #ddd;
+            margin-top: 16px;
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .emoji {
+            font-size: 20px;
+            margin-right: 8px;
+        }
+
+        .language-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .language-item {
+            background: #f0f4ff;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 Página de Prueba - TransDuctor</h1>
+        <p class="subtitle">Usa esta página para probar la extensión. Pasa el cursor sobre cualquier texto.</p>
+
+        <div class="highlight">
+            <p>✅ <strong>La extensión está correctamente instalada si ves tooltips de traducción al pasar el cursor.</strong></p>
+        </div>
+
+        <!-- Prueba 1: Palabras en inglés -->
+        <section>
+            <h2>📝 Prueba 1: Palabras en Inglés</h2>
+            <p>Pasa el cursor sobre estas palabras para ver su traducción:</p>
+            <div class="test-area">
+                <p>
+                    <strong>hello</strong> • <strong>world</strong> • <strong>translator</strong> • <strong>extension</strong> • <strong>computer</strong>
+                </p>
+            </div>
+        </section>
+
+        <!-- Prueba 2: Oraciones -->
+        <section>
+            <h2>📖 Prueba 2: Oraciones Completas</h2>
+            <p>Intenta pasar el cursor sobre estas frases:</p>
+            <div class="test-area">
+                <p>"Hola mundo, esto es una prueba de traducción."</p>
+                <p>"The quick brown fox jumps over the lazy dog."</p>
+                <p>"Bonjour, comment allez-vous?"</p>
+            </div>
+        </section>
+
+        <!-- Prueba 3: Idiomas Múltiples -->
+        <section>
+            <h2>🌍 Prueba 3: Múltiples Idiomas</h2>
+            <p>Prueba con textos en diferentes idiomas (cambia el idioma destino en opciones):</p>
+            <div class="test-area">
+                <ul>
+                    <li><strong>Inglés:</strong> "The extension is working perfectly!"</li>
+                    <li><strong>Español:</strong> "¡La extensión funciona perfectamente!"</li>
+                    <li><strong>Francés:</strong> "L'extension fonctionne parfaitement!"</li>
+                    <li><strong>Alemán:</strong> "Die Erweiterung funktioniert perfekt!"</li>
+                    <li><strong>Japonés:</strong> "拡張機能は完璧に機能しています！"</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Prueba 4: Configuración -->
+        <section>
+            <h2>⚙️ Prueba 4: Cambiar Configuración</h2>
+            <p>Prueba estos ajustes para personalizar la experiencia:</p>
+            <div class="test-area">
+                <ul>
+                    <li><strong>Aumenta el tiempo de espera</strong> a 3000ms para ver si prefieres esperar más</li>
+                    <li><strong>Cambia el tamaño de fuente</strong> a 14px para texto más grande</li>
+                    <li><strong>Cambia el tema</strong> a claro si usas fondos claros</li>
+                    <li><strong>Prueba diferentes idiomas</strong> destino</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Prueba 5: Verificación de Consola -->
+        <section>
+            <h2>🔍 Prueba 5: Verificar en Consola</h2>
+            <p>Para debugging, abre la consola del navegador (F12) y verifica:</p>
+            <div class="code">
+Mensajes que deberías ver:
+✓ TransDuctor iniciado correctamente
+[Logs de traducción]
+            </div>
+            <button onclick="verificarConsola()">🧪 Iniciar Verificación</button>
+            <div id="consoleStatus"></div>
+        </section>
+
+        <!-- Idiomas Soportados -->
+        <section>
+            <h2>🗣️ Idiomas Soportados</h2>
+            <p>TransDuctor puede traducir a estos idiomas (selecciona en opciones):</p>
+            <div class="language-list">
+                <div class="language-item">🇬🇧 English - Inglés</div>
+                <div class="language-item">🇪🇸 Español - Spanish</div>
+                <div class="language-item">🇫🇷 Français - Francés</div>
+                <div class="language-item">🇩🇪 Deutsch - Alemán</div>
+                <div class="language-item">🇵🇹 Português - Portugués</div>
+                <div class="language-item">🇮🇹 Italiano - Italiano</div>
+                <div class="language-item">🇯🇵 日本語 - Japonés</div>
+                <div class="language-item">🇨🇳 中文 - Chino Mandarín</div>
+                <div class="language-item">🇰🇷 한국어 - Coreano</div>
+                <div class="language-item">🇹🇭 ไทย - Tailandés</div>
+                <div class="language-item">🇷🇺 Русский - Ruso</div>
+                <div class="language-item">🇸🇦 العربية - Árabe</div>
+                <div class="language-item">🇹🇷 Türkçe - Turco</div>
+                <div class="language-item">🇵🇱 Polski - Polaco</div>
+                <div class="language-item">🇳🇱 Nederlands - Holandés</div>
+                <div class="language-item">🇸🇪 Svenska - Sueco</div>
+                <div class="language-item">🇻🇳 Tiếng Việt - Vietnamita</div>
+                <div class="language-item">🇬🇷 Ελληνικά - Griego</div>
+            </div>
+        </section>
+
+        <!-- Panel de Control -->
+        <section>
+            <h2>🎮 Panel de Control</h2>
+            <div class="test-area">
+                <p>
+                    <button onclick="abrirOpciones()"><span class="emoji">⚙️</span>Abrir Opciones</button>
+                    <button onclick="testTranslation()" style="margin-left: 10px;"><span class="emoji">🧪</span>Probar Traducción</button>
+                    <button onclick="abrirConsola()" style="margin-left: 10px;"><span class="emoji">🐛</span>Consola</button>
+                </p>
+            </div>
+        </section>
+
+        <!-- Historial de Estado -->
+        <section>
+            <h2>📊 Estado de la Extensión</h2>
+            <div id="statusArea" class="test-area">
+                <p>Comprobando estado...</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Verificar estado de la extensión
+        window.addEventListener('load', () => {
+            verificarEstado();
+        });
+
+        function verificarEstado() {
+            const statusArea = document.getElementById('statusArea');
+            
+            try {
+                // Verificar si TransDuctor está disponible
+                chrome.runtime.sendMessage(
+                    { action: 'test' },
+                    (response) => {
+                        if (chrome.runtime.lastError) {
+                            statusArea.innerHTML = `
+                                <p class="status error">
+                                    ❌ TransDuctor no está activo en esta página
+                                </p>
+                                <p style="font-size: 12px; color: #666; margin-top: 12px;">
+                                    Solución: Recarga la página o verifica que la extensión esté habilitada en chrome://extensions/
+                                </p>
+                            `;
+                        } else {
+                            statusArea.innerHTML = `
+                                <p class="status success">
+                                    ✅ TransDuctor está activo y funcionando correctamente
+                                </p>
+                                <p style="font-size: 12px; color: #0c5460; margin-top: 12px;">
+                                    ¡Pasa el cursor sobre cualquier texto para ver la traducción!
+                                </p>
+                            `;
+                        }
+                    }
+                );
+            } catch (error) {
+                statusArea.innerHTML = `
+                    <p class="status error">
+                        ❌ Error: ${error.message}
+                    </p>
+                `;
+            }
+        }
+
+        function abrirOpciones() {
+            chrome.runtime.openOptionsPage();
+        }
+
+        function abrirConsola() {
+            alert('Presiona F12 o Ctrl+Shift+I para abrir la consola del navegador');
+        }
+
+        function testTranslation() {
+            const testArea = document.querySelector('.test-area');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = 'status info';
+            statusDiv.innerHTML = '⌛ Probando traducción...';
+            testArea.appendChild(statusDiv);
+
+            chrome.runtime.sendMessage(
+                {
+                    action: 'translate',
+                    text: 'Hello world! This is a test.',
+                    targetLanguage: 'español'
+                },
+                (response) => {
+                    if (response && response.success) {
+                        statusDiv.className = 'status success';
+                        statusDiv.innerHTML = `✅ Traducción exitosa: "${response.translation}"`;
+                    } else {
+                        statusDiv.className = 'status error';
+                        statusDiv.innerHTML = `❌ Error: ${response?.error || 'Desconocido'}`;
+                    }
+                }
+            );
+        }
+
+        function verificarConsola() {
+            const statusDiv = document.getElementById('consoleStatus');
+            statusDiv.innerHTML = `
+                <p class="status info">
+                    📋 Abre la consola (F12) y verifica estos mensajes:
+                </p>
+                <div class="code">
+• ✓ TransDuctor iniciado correctamente
+• Logs de traducción
+• Mensajes de error (si los hay)
+                </div>
+            `;
+            console.log('%c✓ TransDuctor Test Page Loaded', 'color: green; font-size: 16px; font-weight: bold;');
+        }
+    </script>
+</body>
+</html>

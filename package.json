@@ -1,0 +1,29 @@
+{
+  "name": "transductor",
+  "version": "1.0.0",
+  "description": "Traductor inteligente para Chrome basado en IA Groq",
+  "type": "module",
+  "keywords": [
+    "translator",
+    "chrome-extension",
+    "groq",
+    "ai",
+    "translation",
+    "hover",
+    "multilingual"
+  ],
+  "author": "Tu Nombre",
+  "license": "MIT",
+  "scripts": {
+    "test": "echo \"No tests configured\"",
+    "dev": "echo \"Load in chrome://extensions/ with Developer Mode enabled\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tuusuario/transductor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tuusuario/transductor/issues"
+  },
+  "homepage": "https://github.com/tuusuario/transductor#readme"
+}

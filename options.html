@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opciones de TransDuctor</title>
+    <link rel="stylesheet" href="options.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <button class="back-btn" onclick="history.back()">← Volver</button>
+                <h1>⚙️ Configuración de TransDuctor</h1>
+            </div>
+        </header>
+
+        <main>
+            <!-- General Settings -->
+            <section class="settings-section">
+                <h2>Configuración General</h2>
+
+                <div class="setting-item">
+                    <label class="setting-label">
+                        <input type="checkbox" id="enabled">
+                        <span>Extensión activa</span>
+                    </label>
+                    <p class="setting-description">Activa o desactiva TransDuctor completamente</p>
+                </div>
+
+                <div class="setting-item">
+                    <label class="setting-label">Idioma destino:</label>
+                    <select id="targetLanguage" class="full-width">
+                        <optgroup label="Populares">
+                            <option value="inglés">🇬🇧 English - Inglés</option>
+                            <option value="español">🇪🇸 Español - Spanish</option>
+                            <option value="francés">🇫🇷 Français - Francés</option>
+                            <option value="alemán">🇩🇪 Deutsch - Alemán</option>
+                            <option value="portugués">🇵🇹 Português - Portugués</option>
+                            <option value="italiano">🇮🇹 Italiano - Italiano</option>
+                            <option value="japonés">🇯🇵 日本語 - Japonés</option>
+                            <option value="chino mandarin">🇨🇳 中文 - Chino Mandarín</option>
+                            <option value="coreano">🇰🇷 한국어 - Coreano</option>
+                            <option value="tailandés">🇹🇭 ไทย - Tailandés</option>
+                        </optgroup>
+                        <optgroup label="Otros">
+                            <option value="ruso">🇷🇺 Русский - Ruso</option>
+                            <option value="árabe">🇸🇦 العربية - Árabe</option>
+                            <option value="turco">🇹🇷 Türkçe - Turco</option>
+                            <option value="polaco">🇵🇱 Polski - Polaco</option>
+                            <option value="holandés">🇳🇱 Nederlands - Holandés</option>
+                            <option value="sueco">🇸🇪 Svenska - Sueco</option>
+                            <option value="vietnamita">🇻🇳 Tiếng Việt - Vietnamita</option>
+                            <option value="griego">🇬🇷 Ελληνικά - Griego</option>
+                            <option value="hebreo">🇮🇱 עברית - Hebreo</option>
+                            <option value="hindi">🇮🇳 हिंदी - Hindi</option>
+                        </optgroup>
+                    </select>
+                    <p class="setting-description">Elige a qué idioma traducir el texto</p>
+                </div>
+            </section>
+
+            <!-- Behavior Settings -->
+            <section class="settings-section">
+                <h2>Comportamiento</h2>
+
+                <div class="setting-item">
+                    <label class="setting-label">Tiempo de espera del hover:</label>
+                    <div class="slider-wrapper">
+                        <input type="range" id="hoverDelay" min="500" max="5000" step="250" value="2000" class="slider">
+                        <div class="slider-labels">
+                            <span>500ms</span>
+                            <span id="hoverValue">2000ms</span>
+                            <span>5000ms</span>
+                        </div>
+                    </div>
+                    <p class="setting-description">Tiempo que debes pasar el cursor sobre el texto antes de que aparezca la traducción</p>
+                </div>
+
+                <div class="setting-item">
+                    <label class="setting-label">
+                        <input type="checkbox" id="autoDetect">
+                        <span>Detectar idioma automáticamente</span>
+                    </label>
+                    <p class="setting-description">Intenta detectar el idioma del texto original (experimental)</p>
+                </div>
+            </section>
+
+            <!-- Display Settings -->
+            <section class="settings-section">
+                <h2>Apariencia</h2>
+
+                <div class="setting-item">
+                    <label class="setting-label">Tamaño de fuente:</label>
+                    <div class="slider-wrapper">
+                        <input type="range" id="fontSize" min="10" max="18" step="1" value="12" class="slider">
+                        <div class="slider-labels">
+                            <span>10px</span>
+                            <span id="fontValue">12px</span>
+                            <span>18px</span>
+                        </div>
+                    </div>
+                    <p class="setting-description">Tamaño de la fuente en el tooltip de traducción</p>
+                </div>
+
+                <div class="setting-item">
+                    <label class="setting-label">Tema:</label>
+                    <select id="theme" class="full-width">
+                        <option value="dark">🌙 Oscuro (recomendado)</option>
+                        <option value="light">☀️ Claro</option>
+                    </select>
+                    <p class="setting-description">Tema del tooltip flotante</p>
+                </div>
+            </section>
+
+            <!-- Advanced Settings -->
+            <section class="settings-section">
+                <h2>Avanzado</h2>
+
+                <div class="setting-item">
+                    <button id="clearCache" class="btn-secondary">🗑️ Limpiar caché</button>
+                    <p class="setting-description">Elimina las traducciones almacenadas en caché</p>
+                </div>
+
+                <div class="setting-item">
+                    <button id="exportSettings" class="btn-secondary">📥 Exportar configuración</button>
+                    <p class="setting-description">Guarda tu configuración como un archivo JSON</p>
+                </div>
+
+                <div class="setting-item">
+                    <button id="importSettings" class="btn-secondary">📤 Importar configuración</button>
+                    <p class="setting-description">Carga una configuración previamente guardada</p>
+                </div>
+            </section>
+
+            <!-- Info Section -->
+            <section class="settings-section info-section">
+                <h2>ℹ️ Información</h2>
+                <div class="info-content">
+                    <p><strong>TransDuctor v1.0.0</strong></p>
+                    <p>Traductor inteligente para Chrome basado en IA.</p>
+                    <p style="margin-top: 12px; font-size: 12px; color: #666;">
+                        <strong>¿Cómo usar?</strong><br>
+                        1. Pasa el cursor sobre cualquier texto<br>
+                        2. Espera el tiempo configurado<br>
+                        3. Aparecerá la traducción en un tooltip<br>
+                        4. Haz clic en el tooltip para copiarlo
+                    </p>
+                    <p style="margin-top: 12px; font-size: 12px; color: #999;">
+                        Powered by <strong>Groq AI</strong> • Modelo: LLaMA 3 8B
+                    </p>
+                </div>
+            </section>
+
+            <!-- Status Message -->
+            <div id="statusMessage" class="status-message"></div>
+        </main>
+
+        <footer>
+            <button id="resetAll" class="btn-danger">↺ Restaurar valores por defecto</button>
+        </footer>
+    </div>
+
+    <input type="file" id="fileInput" style="display: none;" accept=".json">
+    <script src="options.js"></script>
+</body>
+</html>
