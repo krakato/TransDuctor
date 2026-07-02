@@ -52,18 +52,33 @@ document.addEventListener("keyup", (e) => {
  */
 function obtenerPalabraBajoPuntero(element, event) {
   try {
-    const range = document.caretRangeFromPoint(event.clientX, event.clientY);
-    if (!range) return null;
+    let textNode = null;
+    let offset = 0;
 
-    let node = range.startContainer;
-    let offset = range.startOffset;
+    // Intentar con caretPositionFromPoint (recomendado, pero no en todos los navegadores)
+    if (document.caretPositionFromPoint) {
+      const position = document.caretPositionFromPoint(event.clientX, event.clientY);
+      if (position && position.offsetNode) {
+        textNode = position.offsetNode;
+        offset = position.offset;
+      }
+    }
+    // Fallback a caretRangeFromPoint (deprecado pero más compatible)
+    else if (document.caretRangeFromPoint) {
+      const range = document.caretRangeFromPoint(event.clientX, event.clientY);
+      if (range) {
+        textNode = range.startContainer;
+        offset = range.startOffset;
+      }
+    }
 
-    if (node.nodeType === Node.ELEMENT_NODE) {
+    // Validar que obtuvimos un text node
+    if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
       return null;
     }
 
-    const text = node.textContent;
-    if (!text) return null;
+    const text = textNode.textContent;
+    if (!text || text.length === 0) return null;
 
     // Buscar inicio de palabra
     let inicio = offset;
@@ -77,8 +92,10 @@ function obtenerPalabraBajoPuntero(element, event) {
       fin++;
     }
 
-    return text.substring(inicio, fin).trim();
+    const palabra = text.substring(inicio, fin).trim();
+    return palabra.length > 0 ? palabra : null;
   } catch (e) {
+    console.error("Error en obtenerPalabraBajoPuntero:", e);
     return null;
   }
 }
@@ -176,24 +193,6 @@ function removerTooltip() {
     translatorTooltip.remove();
     translatorTooltip = null;
   }
-}
-
-/**
- * Obtener texto seleccionado en el elemento
- */
-function obtenerTextoDelElemento(element) {
-  if (element.nodeType === Node.TEXT_NODE) {
-    return element.textContent.trim();
-  }
-  
-  let texto = "";
-  for (let child of element.childNodes) {
-    if (child.nodeType === Node.TEXT_NODE) {
-      const trimmed = child.textContent.trim();
-      if (trimmed) texto += trimmed + " ";
-    }
-  }
-  return texto.trim() || element.textContent.trim();
 }
 
 /**
