@@ -6,6 +6,7 @@
 2. Crea una cuenta o inicia sesión
 3. Genera una nueva API Key en la sección de claves API
 4. Copia la clave
+5. GROQ_API_KEY_REMOVED
 
 ## Paso 2: Configurar la Extensión
 
