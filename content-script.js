@@ -4,11 +4,16 @@ let currentElement = null;
 let isTranslating = false;
 let translatorTooltip = null;
 let lastTranslatedElement = null;
+let ctrlPressed = false;
 
 // Obtener configuración
 let settings = {
   enabled: true,
   targetLanguage: "inglés",
+  sourceLanguage: "auto",
+  translationMode: "word",
+  requireCtrl: false,
+  skipSameLanguage: true,
   hoverDelay: 2000,
   autoDetectLanguage: false,
   fontSize: 12,
@@ -28,6 +33,80 @@ chrome.storage.onChanged.addListener((changes) => {
     }
   }
 });
+
+// Rastrear tecla Ctrl
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Control" || e.ctrlKey) {
+    ctrlPressed = true;
+  }
+}, true);
+
+document.addEventListener("keyup", (e) => {
+  if (e.key === "Control" || !e.ctrlKey) {
+    ctrlPressed = false;
+  }
+}, true);
+
+/**
+ * Obtener la palabra exacta bajo el cursor del ratón
+ */
+function obtenerPalabraBajoPuntero(element, event) {
+  try {
+    const range = document.caretRangeFromPoint(event.clientX, event.clientY);
+    if (!range) return null;
+
+    let node = range.startContainer;
+    let offset = range.startOffset;
+
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      return null;
+    }
+
+    const text = node.textContent;
+    if (!text) return null;
+
+    // Buscar inicio de palabra
+    let inicio = offset;
+    while (inicio > 0 && /\w/.test(text[inicio - 1])) {
+      inicio--;
+    }
+
+    // Buscar fin de palabra
+    let fin = offset;
+    while (fin < text.length && /\w/.test(text[fin])) {
+      fin++;
+    }
+
+    return text.substring(inicio, fin).trim();
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Obtener texto seleccionado
+ */
+function obtenerTextoSeleccionado() {
+  return window.getSelection().toString().trim();
+}
+
+/**
+ * Obtener párrafo completo del elemento
+ */
+function obtenerTextoDelElemento(element) {
+  if (element.nodeType === Node.TEXT_NODE) {
+    return element.textContent.trim();
+  }
+  
+  let texto = "";
+  for (let child of element.childNodes) {
+    if (child.nodeType === Node.TEXT_NODE) {
+      const trimmed = child.textContent.trim();
+      if (trimmed) texto += trimmed + " ";
+    }
+  }
+  return texto.trim() || element.textContent.trim();
+}
 
 /**
  * Crear tooltip flotante para la traducción
@@ -120,16 +199,43 @@ function obtenerTextoDelElemento(element) {
 /**
  * Traducir y mostrar tooltip
  */
-function traducirYMostrar(element) {
+function traducirYMostrar(element, event) {
   if (isTranslating || !settings.enabled) return;
 
-  isTranslating = true;
-  const texto = obtenerTextoDelElemento(element);
-
-  if (texto.length === 0 || texto.length > 500) {
-    isTranslating = false;
+  // Validar que sea un Element node
+  if (!element || element.nodeType !== Node.ELEMENT_NODE) {
     return;
   }
+
+  // Requerir Ctrl si está configurado
+  if (settings.requireCtrl && !ctrlPressed) {
+    return;
+  }
+
+  // Seleccionar texto basado en modo
+  let texto = "";
+  if (settings.translationMode === "word") {
+    texto = obtenerPalabraBajoPuntero(element, event);
+  } else if (settings.translationMode === "selection") {
+    texto = obtenerTextoSeleccionado();
+  } else if (settings.translationMode === "ctrl") {
+    if (!ctrlPressed) return;
+    texto = obtenerTextoDelElemento(element);
+  } else {
+    // paragraph mode (default)
+    texto = obtenerTextoDelElemento(element);
+  }
+
+  if (!texto || texto.length === 0 || texto.length > 500) {
+    return;
+  }
+
+  // No traducir si idioma origen = destino
+  if (settings.skipSameLanguage && settings.sourceLanguage !== "auto" && settings.sourceLanguage === settings.targetLanguage) {
+    return;
+  }
+
+  isTranslating = true;
 
   // Mostrar "Traduciendo..."
   const rect = element.getBoundingClientRect();
@@ -140,10 +246,16 @@ function traducirYMostrar(element) {
     {
       action: "translate",
       text: texto,
-      targetLanguage: settings.targetLanguage
+      targetLanguage: settings.targetLanguage,
+      sourceLanguage: settings.sourceLanguage
     },
     (response) => {
       isTranslating = false;
+
+      if (chrome.runtime.lastError) {
+        console.error("Error en runtime:", chrome.runtime.lastError);
+        return;
+      }
 
       if (response && response.success) {
         if (translatorTooltip) {
@@ -193,7 +305,7 @@ document.addEventListener(
     // Configurar nuevo timeout
     hoverTimeout = setTimeout(() => {
       if (currentElement === element && !isTranslating) {
-        traducirYMostrar(element);
+        traducirYMostrar(element, event);
       }
     }, settings.hoverDelay);
   },

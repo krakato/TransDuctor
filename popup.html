@@ -67,6 +67,46 @@
                 </small>
             </div>
 
+            <!-- Source Language -->
+            <div class="section">
+                <label for="sourceLanguage">Idioma de origen:</label>
+                <select id="sourceLanguage">
+                    <option value="auto">🤖 Automático</option>
+                    <option value="inglés">English - Inglés</option>
+                    <option value="español">Español - Spanish</option>
+                    <option value="francés">Français - Francés</option>
+                </select>
+            </div>
+
+            <!-- Translation Mode -->
+            <div class="section">
+                <label for="translationMode">Modo de traducción:</label>
+                <select id="translationMode">
+                    <option value="word">📍 Palabra bajo cursor</option>
+                    <option value="paragraph">📄 Párrafo completo</option>
+                    <option value="selection">✂️ Texto seleccionado</option>
+                    <option value="ctrl">⌨️ Solo con Ctrl</option>
+                </select>
+            </div>
+
+            <!-- Require Ctrl -->
+            <div class="section">
+                <label class="toggle-container">
+                    <span>Requerir tecla Ctrl</span>
+                    <input type="checkbox" id="requireCtrl">
+                    <span class="toggle-switch"></span>
+                </label>
+            </div>
+
+            <!-- Skip Same Language -->
+            <div class="section">
+                <label class="toggle-container">
+                    <span>No traducir si idioma es igual</span>
+                    <input type="checkbox" id="skipSameLanguage" checked>
+                    <span class="toggle-switch"></span>
+                </label>
+            </div>
+
             <!-- Hover Delay -->
             <div class="section">
                 <label for="hoverDelay">Tiempo de espera (ms):</label>

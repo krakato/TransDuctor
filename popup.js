@@ -1,6 +1,10 @@
 // Elementos del DOM con validación
 const enableToggle = document.getElementById("enableToggle");
 const targetLanguageSelect = document.getElementById("targetLanguage");
+const sourceLanguageSelect = document.getElementById("sourceLanguage");
+const translationModeSelect = document.getElementById("translationMode");
+const requireCtrlCheckbox = document.getElementById("requireCtrl");
+const skipSameLanguageCheckbox = document.getElementById("skipSameLanguage");
 const hoverDelaySlider = document.getElementById("hoverDelay");
 const hoverDelayValue = document.getElementById("hoverDelayValue");
 const fontSizeSlider = document.getElementById("fontSize");
@@ -21,6 +25,10 @@ if (!enableToggle || !targetLanguageSelect || !groqApiKeyInput) {
 const defaultSettings = {
   enabled: true,
   targetLanguage: "inglés",
+  sourceLanguage: "auto",
+  translationMode: "word",
+  requireCtrl: false,
+  skipSameLanguage: true,
   hoverDelay: 2000,
   fontSize: 12,
   theme: "dark"
@@ -31,6 +39,10 @@ function loadSettings() {
   chrome.storage.sync.get(defaultSettings, (settings) => {
     enableToggle.checked = settings.enabled;
     targetLanguageSelect.value = settings.targetLanguage;
+    sourceLanguageSelect.value = settings.sourceLanguage || "auto";
+    translationModeSelect.value = settings.translationMode || "word";
+    requireCtrlCheckbox.checked = settings.requireCtrl || false;
+    skipSameLanguageCheckbox.checked = settings.skipSameLanguage !== false;
     hoverDelaySlider.value = settings.hoverDelay;
     hoverDelayValue.textContent = settings.hoverDelay + "ms";
     fontSizeSlider.value = settings.fontSize;
@@ -49,6 +61,10 @@ function saveSettings() {
   const settings = {
     enabled: enableToggle.checked,
     targetLanguage: targetLanguageSelect.value,
+    sourceLanguage: sourceLanguageSelect.value,
+    translationMode: translationModeSelect.value,
+    requireCtrl: requireCtrlCheckbox.checked,
+    skipSameLanguage: skipSameLanguageCheckbox.checked,
     hoverDelay: parseInt(hoverDelaySlider.value),
     fontSize: parseInt(fontSizeSlider.value),
     theme: themeSelect.value,
@@ -84,7 +100,12 @@ function safeAddListener(element, event, callback) {
 // Event Listeners (con validación)
 safeAddListener(enableToggle, "change", saveSettings);
 safeAddListener(targetLanguageSelect, "change", saveSettings);
+safeAddListener(sourceLanguageSelect, "change", saveSettings);
+safeAddListener(translationModeSelect, "change", saveSettings);
+safeAddListener(requireCtrlCheckbox, "change", saveSettings);
+safeAddListener(skipSameLanguageCheckbox, "change", saveSettings);
 safeAddListener(themeSelect, "change", saveSettings);
+safeAddListener(groqApiKeyInput, "change", saveSettings);
 
 if (hoverDelaySlider) {
   hoverDelaySlider.addEventListener("input", (e) => {

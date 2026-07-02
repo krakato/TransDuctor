@@ -65,6 +65,63 @@
                 <h2>Comportamiento</h2>
 
                 <div class="setting-item">
+                    <label class="setting-label">Idioma de origen:</label>
+                    <select id="sourceLanguage" class="full-width">
+                        <option value="auto">🤖 Detectar automáticamente</option>
+                        <optgroup label="Populares">
+                            <option value="inglés">🇬🇧 English - Inglés</option>
+                            <option value="español">🇪🇸 Español - Spanish</option>
+                            <option value="francés">🇫🇷 Français - Francés</option>
+                            <option value="alemán">🇩🇪 Deutsch - Alemán</option>
+                            <option value="portugués">🇵🇹 Português - Portugués</option>
+                            <option value="italiano">🇮🇹 Italiano - Italiano</option>
+                            <option value="japonés">🇯🇵 日本語 - Japonés</option>
+                            <option value="chino mandarin">🇨🇳 中文 - Chino Mandarín</option>
+                        </optgroup>
+                        <optgroup label="Otros">
+                            <option value="ruso">🇷🇺 Русский - Ruso</option>
+                            <option value="árabe">🇸🇦 العربية - Árabe</option>
+                            <option value="coreano">🇰🇷 한국어 - Coreano</option>
+                            <option value="tailandés">🇹🇭 ไทย - Tailandés</option>
+                            <option value="turco">🇹🇷 Türkçe - Turco</option>
+                            <option value="polaco">🇵🇱 Polski - Polaco</option>
+                            <option value="holandés">🇳🇱 Nederlands - Holandés</option>
+                            <option value="sueco">🇸🇪 Svenska - Sueco</option>
+                            <option value="vietnamita">🇻🇳 Tiếng Việt - Vietnamita</option>
+                            <option value="griego">🇬🇷 Ελληνικά - Griego</option>
+                        </optgroup>
+                    </select>
+                    <p class="setting-description">Idioma del texto original (si no es automático)</p>
+                </div>
+
+                <div class="setting-item">
+                    <label class="setting-label">Modo de traducción:</label>
+                    <select id="translationMode" class="full-width">
+                        <option value="word">📍 Palabra bajo el cursor</option>
+                        <option value="paragraph">📄 Párrafo completo</option>
+                        <option value="selection">✂️ Texto seleccionado</option>
+                        <option value="ctrl">⌨️ Solo con tecla Ctrl</option>
+                    </select>
+                    <p class="setting-description">Qué texto traducir cuando pasas el cursor</p>
+                </div>
+
+                <div class="setting-item">
+                    <label class="setting-label">
+                        <input type="checkbox" id="requireCtrl">
+                        <span>Requerir tecla Ctrl para traducir</span>
+                    </label>
+                    <p class="setting-description">Solo traduce si mantienes presionada la tecla Control</p>
+                </div>
+
+                <div class="setting-item">
+                    <label class="setting-label">
+                        <input type="checkbox" id="skipSameLanguage">
+                        <span>No traducir si idioma es igual</span>
+                    </label>
+                    <p class="setting-description">Evita traducir cuando el idioma origen y destino son los mismos</p>
+                </div>
+
+                <div class="setting-item">
                     <label class="setting-label">Tiempo de espera del hover:</label>
                     <div class="slider-wrapper">
                         <input type="range" id="hoverDelay" min="500" max="5000" step="250" value="2000" class="slider">
