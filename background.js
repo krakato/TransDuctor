@@ -6,7 +6,7 @@ let GROQ_API_KEY = null; // Se carga desde chrome.storage
 // Cargar la API key desde chrome.storage al iniciar
 if (typeof chrome !== 'undefined' && chrome.storage) {
   chrome.storage.sync.get(['groqApiKey'], (result) => {
-    if (result.groqApiKey) {
+    if (result && result.groqApiKey) {
       GROQ_API_KEY = result.groqApiKey;
     }
   });
@@ -15,14 +15,21 @@ if (typeof chrome !== 'undefined' && chrome.storage) {
 // Escuchar mensajes del content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "translate") {
-    traducirTexto(request.text, request.targetLanguage)
-      .then(result => {
-        sendResponse({ success: true, translation: result });
-      })
-      .catch(error => {
-        console.error("Error en traducción:", error);
-        sendResponse({ success: false, error: error.message });
-      });
+    // Cargar la clave API cada vez que se recibe un mensaje
+    chrome.storage.sync.get(['groqApiKey'], (result) => {
+      if (result && result.groqApiKey) {
+        GROQ_API_KEY = result.groqApiKey;
+      }
+      
+      traducirTexto(request.text, request.targetLanguage)
+        .then(result => {
+          sendResponse({ success: true, translation: result });
+        })
+        .catch(error => {
+          console.error("Error en traducción:", error);
+          sendResponse({ success: false, error: error.message });
+        });
+    });
     return true; // Mantener el channel abierto para respuesta asincrónica
   }
 });
