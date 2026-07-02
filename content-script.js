@@ -251,20 +251,37 @@ function traducirYMostrar(element, event) {
     (response) => {
       isTranslating = false;
 
+      // Verificar si hay error en el runtime primero
       if (chrome.runtime.lastError) {
         console.error("Error en runtime:", chrome.runtime.lastError);
+        if (translatorTooltip) {
+          crearTooltip("❌ Error de conexión", rect);
+        }
         return;
       }
 
-      if (response && response.success) {
+      // Validar que la respuesta exista
+      if (!response) {
+        console.error("No se recibió respuesta del background script");
+        if (translatorTooltip) {
+          crearTooltip("❌ Sin respuesta", rect);
+        }
+        return;
+      }
+
+      // Manejar respuesta exitosa
+      if (response.success && response.translation) {
         if (translatorTooltip) {
           crearTooltip(response.translation, rect);
         }
         lastTranslatedElement = element;
       } else {
+        // Manejar error en la respuesta
+        const errorMsg = response.error || "Error en traducción";
         if (translatorTooltip) {
-          crearTooltip("❌ Error en traducción", rect);
+          crearTooltip("❌ " + errorMsg, rect);
         }
+        console.error("Error en traducción:", errorMsg);
       }
     }
   );
