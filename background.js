@@ -17,11 +17,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "translate") {
     // Cargar la clave API cada vez que se recibe un mensaje
     chrome.storage.sync.get(['groqApiKey'], (result) => {
-      if (result && result.groqApiKey) {
-        GROQ_API_KEY = result.groqApiKey;
+      if (!result || !result.groqApiKey) {
+        sendResponse({ 
+          success: false, 
+          error: "⚙️ Configura tu clave de API de Groq en las Opciones de la extensión" 
+        });
+        return;
       }
       
-      traducirTexto(request.text, request.targetLanguage)
+      GROQ_API_KEY = result.groqApiKey;
+      
+      traducirTexto(
+        request.text, 
+        request.targetLanguage,
+        request.sourceLanguage
+      )
         .then(result => {
           sendResponse({ success: true, translation: result });
         })
@@ -38,9 +48,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
  * Traduce texto usando la API de Groq
  * @param {string} texto - Texto a traducir
  * @param {string} idiomaDestino - Idioma destino
+ * @param {string} idiomaOrigen - Idioma origen (puede ser "auto" para detectar)
  * @returns {Promise<string>} - Texto traducido
  */
-async function traducirTexto(texto, idiomaDestino = "inglés") {
+async function traducirTexto(texto, idiomaDestino = "inglés", idiomaOrigen = "auto") {
   if (!texto || texto.trim().length === 0) {
     throw new Error("Texto vacío");
   }
@@ -51,6 +62,24 @@ async function traducirTexto(texto, idiomaDestino = "inglés") {
   }
 
   try {
+    // Construir el prompt del sistema basado en si se detecta o no el idioma
+    let systemPrompt = `Eres un traductor profesional y experto.`;
+    
+    if (idiomaOrigen && idiomaOrigen !== "auto") {
+      systemPrompt += ` Tu tarea es traducir el texto del ${idiomaOrigen} al ${idiomaDestino}.`;
+    } else {
+      systemPrompt += ` Tu tarea es detectar el idioma del texto y traducirlo al ${idiomaDestino}.`;
+    }
+    
+    systemPrompt += ` 
+
+Reglas importantes:
+- Traduce SOLO el texto, sin añadir explicaciones ni comentarios
+- Mantén el tono y contexto del original
+- Si el texto contiene acrónimos técnicos, mantenlos en inglés si es necesario
+- Sé conciso y natural en la traducción
+- Devuelve ÚNICAMENTE el texto traducido, nada más`;
+
     const response = await fetch(GROQ_API_URL, {
       method: "POST",
       headers: {
@@ -62,14 +91,7 @@ async function traducirTexto(texto, idiomaDestino = "inglés") {
         messages: [
           {
             role: "system",
-            content: `Eres un traductor profesional y experto. Tu tarea es traducir el texto exactamente al idioma ${idiomaDestino}. 
-            
-Reglas importantes:
-- Traduce SOLO el texto, sin añadir explicaciones ni comentarios
-- Mantén el tono y contexto del original
-- Si el texto contiene acrónimos técnicos, mantenlos en inglés si es necesario
-- Sé conciso y natural en la traducción
-- Devuelve ÚNICAMENTE el texto traducido, nada más`
+            content: systemPrompt
           },
           {
             role: "user",
