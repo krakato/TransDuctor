@@ -1,7 +1,16 @@
 // Configuración de la API de Groq
-const GROQ_API_KEY = "***REMOVED***";
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
-const DEFAULT_MODEL = "llama3-8b-8192";
+const DEFAULT_MODEL = "llama-3.1-8b-instant"; // Modelo activo (llama3-8b-8192 fue deprecado)
+let GROQ_API_KEY = null; // Se carga desde chrome.storage
+
+// Cargar la API key desde chrome.storage al iniciar
+if (typeof chrome !== 'undefined' && chrome.storage) {
+  chrome.storage.sync.get(['groqApiKey'], (result) => {
+    if (result.groqApiKey) {
+      GROQ_API_KEY = result.groqApiKey;
+    }
+  });
+}
 
 // Escuchar mensajes del content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -27,6 +36,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 async function traducirTexto(texto, idiomaDestino = "inglés") {
   if (!texto || texto.trim().length === 0) {
     throw new Error("Texto vacío");
+  }
+
+  // Validar que la clave API esté configurada
+  if (!GROQ_API_KEY || GROQ_API_KEY.trim().length === 0) {
+    throw new Error("⚙️ Configura tu clave de API de Groq en las Opciones de la extensión");
   }
 
   try {

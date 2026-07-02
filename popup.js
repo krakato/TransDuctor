@@ -9,6 +9,8 @@ const themeSelect = document.getElementById("theme");
 const testTranslateBtn = document.getElementById("testTranslate");
 const resetSettingsBtn = document.getElementById("resetSettings");
 const statusMessage = document.getElementById("statusMessage");
+const groqApiKeyInput = document.getElementById("groqApiKey");
+const toggleApiKeyVisibilityBtn = document.getElementById("toggleApiKeyVisibility");
 
 // Valores por defecto
 const defaultSettings = {
@@ -29,6 +31,11 @@ function loadSettings() {
     fontSizeSlider.value = settings.fontSize;
     fontSizeValue.textContent = settings.fontSize + "px";
     themeSelect.value = settings.theme;
+    
+    // Cargar la clave API
+    if (settings.groqApiKey) {
+      groqApiKeyInput.value = settings.groqApiKey;
+    }
   });
 }
 
@@ -39,7 +46,8 @@ function saveSettings() {
     targetLanguage: targetLanguageSelect.value,
     hoverDelay: parseInt(hoverDelaySlider.value),
     fontSize: parseInt(fontSizeSlider.value),
-    theme: themeSelect.value
+    theme: themeSelect.value,
+    groqApiKey: groqApiKeyInput.value.trim() // Guardar la clave API
   };
 
   chrome.storage.sync.set(settings, () => {
@@ -71,6 +79,16 @@ hoverDelaySlider.addEventListener("input", (e) => {
 fontSizeSlider.addEventListener("input", (e) => {
   fontSizeValue.textContent = e.target.value + "px";
   saveSettings();
+});
+
+// Guardar cambios en la clave API
+groqApiKeyInput.addEventListener("change", saveSettings);
+
+// Toglear visibilidad de la clave API
+toggleApiKeyVisibilityBtn.addEventListener("click", () => {
+  const isPassword = groqApiKeyInput.type === "password";
+  groqApiKeyInput.type = isPassword ? "text" : "password";
+  toggleApiKeyVisibilityBtn.textContent = isPassword ? "🙈" : "👁️";
 });
 
 // Probar traducción
