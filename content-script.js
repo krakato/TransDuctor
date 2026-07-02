@@ -177,12 +177,12 @@ function crearTooltip(traduccion, rect) {
 
   translatorTooltip = tooltip;
 
-  // Auto-remover después de 10 segundos
+  // Auto-remover después de 20 segundos (tiempo suficiente para ver traducciones o errores)
   setTimeout(() => {
     if (translatorTooltip === tooltip) {
       removerTooltip();
     }
-  }, 10000);
+  }, 20000);
 }
 
 /**
@@ -240,6 +240,17 @@ function traducirYMostrar(element, event) {
   const rect = element.getBoundingClientRect();
   crearTooltip("⌛ Traduciendo...", rect);
 
+  // Timeout para errores de conexión (10 segundos)
+  let tiempoTimeout = setTimeout(() => {
+    if (isTranslating) {
+      isTranslating = false;
+      console.error("Timeout: No se recibió respuesta del background");
+      if (translatorTooltip) {
+        crearTooltip("❌ Tiempo de espera agotado", rect);
+      }
+    }
+  }, 10000);
+
   // Enviar solicitud de traducción al background
   chrome.runtime.sendMessage(
     {
@@ -249,13 +260,15 @@ function traducirYMostrar(element, event) {
       sourceLanguage: settings.sourceLanguage
     },
     (response) => {
+      // Limpiar timeout si llegó respuesta
+      clearTimeout(tiempoTimeout);
       isTranslating = false;
 
       // Verificar si hay error en el runtime primero
       if (chrome.runtime.lastError) {
         console.error("Error en runtime:", chrome.runtime.lastError);
         if (translatorTooltip) {
-          crearTooltip("❌ Error de conexión", rect);
+          crearTooltip("❌ Error: " + chrome.runtime.lastError.message, rect);
         }
         return;
       }

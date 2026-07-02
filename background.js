@@ -15,9 +15,12 @@ if (typeof chrome !== 'undefined' && chrome.storage) {
 // Escuchar mensajes del content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "translate") {
+    console.log("📨 Mensaje recibido del content script:", request);
+    
     // Cargar la clave API cada vez que se recibe un mensaje
     chrome.storage.sync.get(['groqApiKey'], (result) => {
       if (!result || !result.groqApiKey) {
+        console.error("❌ No hay clave API configurada");
         sendResponse({ 
           success: false, 
           error: "⚙️ Configura tu clave de API de Groq en las Opciones de la extensión" 
@@ -26,6 +29,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
       
       GROQ_API_KEY = result.groqApiKey;
+      console.log("✓ API key cargada, iniciando traducción...");
       
       traducirTexto(
         request.text, 
@@ -33,10 +37,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         request.sourceLanguage
       )
         .then(result => {
+          console.log("✓ Traducción completada:", result);
           sendResponse({ success: true, translation: result });
         })
         .catch(error => {
-          console.error("Error en traducción:", error);
+          console.error("❌ Error en traducción:", error);
           sendResponse({ success: false, error: error.message });
         });
     });
@@ -55,6 +60,8 @@ async function traducirTexto(texto, idiomaDestino = "inglés", idiomaOrigen = "a
   if (!texto || texto.trim().length === 0) {
     throw new Error("Texto vacío");
   }
+
+  console.log(`🔄 Iniciando traducción: "${texto.substring(0, 50)}..." a ${idiomaDestino}`);
 
   // Validar que la clave API esté configurada
   if (!GROQ_API_KEY || GROQ_API_KEY.trim().length === 0) {
@@ -80,6 +87,7 @@ Reglas importantes:
 - Sé conciso y natural en la traducción
 - Devuelve ÚNICAMENTE el texto traducido, nada más`;
 
+    console.log("📤 Enviando request a Groq API...");
     const response = await fetch(GROQ_API_URL, {
       method: "POST",
       headers: {
@@ -103,20 +111,26 @@ Reglas importantes:
       })
     });
 
+    console.log("📥 Respuesta recibida. Status:", response.status);
+
     if (!response.ok) {
       const errorData = await response.json();
+      console.error("❌ API Error:", errorData);
       throw new Error(`API Error: ${errorData.error?.message || response.statusText}`);
     }
 
     const data = await response.json();
     
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error("❌ Estructura de respuesta inesperada:", data);
       throw new Error("Respuesta inesperada de la API");
     }
 
-    return data.choices[0].message.content.trim();
+    const translation = data.choices[0].message.content.trim();
+    console.log("✓ Traducción exitosa:", translation);
+    return translation;
   } catch (error) {
-    console.error("Error al traducir:", error);
+    console.error("❌ Error al traducir:", error);
     throw error;
   }
 }
