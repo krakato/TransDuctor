@@ -15,6 +15,8 @@ const resetSettingsBtn = document.getElementById("resetSettings");
 const statusMessage = document.getElementById("statusMessage");
 const groqApiKeyInput = document.getElementById("groqApiKey");
 const toggleApiKeyVisibilityBtn = document.getElementById("toggleApiKeyVisibility");
+const historyContainer = document.getElementById("historyContainer");
+const clearHistoryBtn = document.getElementById("clearHistory");
 
 // Validar que todos los elementos existan
 if (!enableToggle || !targetLanguageSelect || !groqApiKeyInput) {
@@ -200,5 +202,74 @@ if (resetSettingsBtn) {
   });
 }
 
+// Cargar y mostrar historial
+function loadHistory() {
+  chrome.storage.local.get(["translationHistory"], (result) => {
+    const history = result.translationHistory || [];
+    
+    if (!historyContainer) return;
+    
+    if (history.length === 0) {
+      historyContainer.innerHTML = '<p class="empty-message">Sin traducciones aún</p>';
+      return;
+    }
+    
+    // Mostrar solo las últimas 10 traducciones
+    const recentHistory = history.slice(0, 10);
+    historyContainer.innerHTML = recentHistory.map(item => {
+      const date = new Date(item.timestamp);
+      const timeStr = date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+      const langs = `${item.sourceLang || 'auto'} → ${item.targetLang}`;
+      
+      return `
+        <div class="history-item" title="Click para copiar">
+          <div class="history-original">${escapeHtml(item.original.substring(0, 50))}${item.original.length > 50 ? '...' : ''}</div>
+          <div class="history-translation">${escapeHtml(item.translation.substring(0, 50))}${item.translation.length > 50 ? '...' : ''}</div>
+          <div class="history-meta">${langs} • ${timeStr}</div>
+        </div>
+      `;
+    }).join('');
+    
+    // Agregar event listeners para copiar
+    const items = historyContainer.querySelectorAll('.history-item');
+    items.forEach((item, index) => {
+      item.addEventListener('click', () => {
+        const translation = history[index].translation;
+        navigator.clipboard.writeText(translation).then(() => {
+          showMessage("✓ Copiado: " + translation.substring(0, 30), "success");
+        });
+      });
+    });
+  });
+}
+
+// Limpiar historial
+function clearHistory() {
+  if (confirm("¿Está seguro de que desea eliminar todo el historial de traducciones?")) {
+    chrome.storage.local.set({ translationHistory: [] }, () => {
+      loadHistory();
+      showMessage("✓ Historial eliminado", "success");
+    });
+  }
+}
+
+// Helper: Escapar caracteres HTML
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+// Event listener para limpiar historial
+if (clearHistoryBtn) {
+  clearHistoryBtn.addEventListener('click', clearHistory);
+}
+
 // Cargar configuración al abrir
 loadSettings();
+loadHistory();

@@ -128,6 +128,10 @@ Reglas importantes:
 
     const translation = data.choices[0].message.content.trim();
     console.log("✓ Traducción exitosa:", translation);
+    
+    // Guardar en el historial
+    guardarEnHistorial(texto, translation, idiomaOrigen, idiomaDestino);
+    
     return translation;
   } catch (error) {
     console.error("❌ Error al traducir:", error);
@@ -135,8 +139,41 @@ Reglas importantes:
   }
 }
 
+// Guardar traducción en el historial
+function guardarEnHistorial(texto, traduccion, idiomaOrigen, idiomaDestino) {
+  try {
+    chrome.storage.local.get(["translationHistory"], (result) => {
+      let history = result.translationHistory || [];
+      
+      // Crear entrada del historial
+      const entry = {
+        id: Date.now(),
+        original: texto,
+        translation: traduccion,
+        sourceLang: idiomaOrigen,
+        targetLang: idiomaDestino,
+        timestamp: new Date().toISOString()
+      };
+      
+      // Agregar al inicio (más recientes primero)
+      history.unshift(entry);
+      
+      // Mantener máximo 500 entradas
+      if (history.length > 500) {
+        history = history.slice(0, 500);
+      }
+      
+      // Guardar en storage
+      chrome.storage.local.set({ translationHistory: history }, () => {
+        console.log("✓ Guardado en historial. Total:", history.length);
+      });
+    });
+  } catch (error) {
+    console.error("❌ Error al guardar en historial:", error);
+  }
+}
+
 // Limpiar caché antigua (Manifest V3 no soporta alarms, se limpia manualmente)
-// Esta función se llama cuando hay una traducción
 function limpiarCacheAntiguo() {
   try {
     if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) {

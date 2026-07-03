@@ -221,18 +221,22 @@ function traducirYMostrar(element, event) {
     return;
   }
 
-  // Seleccionar texto basado en modo
+  // Detección automática inteligente de qué traducir
+  // Prioridad: Selección > Palabra bajo cursor > Párrafo completo
   let texto = "";
-  if (settings.translationMode === "word") {
-    texto = obtenerPalabraBajoPuntero(element, event);
-  } else if (settings.translationMode === "selection") {
-    texto = obtenerTextoSeleccionado();
-  } else if (settings.translationMode === "ctrl") {
-    if (!ctrlPressed) return;
-    texto = obtenerTextoDelElemento(element);
+  
+  // 1. Primero: ¿Hay texto seleccionado?
+  const textoSeleccionado = obtenerTextoSeleccionado();
+  if (textoSeleccionado) {
+    texto = textoSeleccionado;
   } else {
-    // paragraph mode (default)
-    texto = obtenerTextoDelElemento(element);
+    // 2. Si no hay selección: intenta obtener palabra bajo cursor
+    texto = obtenerPalabraBajoPuntero(element, event);
+    
+    // 3. Fallback: Si no encontró palabra, usa párrafo completo
+    if (!texto || texto.length === 0) {
+      texto = obtenerTextoDelElemento(element);
+    }
   }
 
   if (!texto || texto.length === 0 || texto.length > 500) {
