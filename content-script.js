@@ -258,7 +258,7 @@ function traducirYMostrar(element, event) {
   let tiempoTimeout = setTimeout(() => {
     if (isTranslating) {
       isTranslating = false;
-      console.error("Timeout: No se recibió respuesta del background");
+      //console.error("Timeout: No se recibió respuesta del background");
       if (translatorTooltip) {
         crearTooltip("❌ Tiempo de espera agotado", rect);
       }
@@ -280,7 +280,7 @@ function traducirYMostrar(element, event) {
 
       // Verificar si hay error en el runtime primero
       if (chrome.runtime.lastError) {
-        console.error("Error en runtime:", chrome.runtime.lastError);
+        //console.error("Error en runtime:", chrome.runtime.lastError);
         if (translatorTooltip) {
           crearTooltip("❌ Error: " + chrome.runtime.lastError.message, rect);
         }
@@ -289,7 +289,7 @@ function traducirYMostrar(element, event) {
 
       // Validar que la respuesta exista
       if (!response) {
-        console.error("No se recibió respuesta del background script");
+        //console.error("No se recibió respuesta del background script");
         if (translatorTooltip) {
           crearTooltip("❌ Sin respuesta", rect);
         }
@@ -308,7 +308,7 @@ function traducirYMostrar(element, event) {
         if (translatorTooltip) {
           crearTooltip("❌ " + errorMsg, rect);
         }
-        console.error("Error en traducción:", errorMsg);
+        //console.error("Error en traducción:", errorMsg);
       }
     }
   );

@@ -20,7 +20,8 @@ const clearHistoryBtn = document.getElementById("clearHistory");
 
 // Validar que todos los elementos existan
 if (!enableToggle || !targetLanguageSelect || !groqApiKeyInput) {
-  console.error("Error: No se pudieron encontrar los elementos del DOM del popup");
+  //console.error("Error: No se pudieron encontrar los elementos del DOM del popup");
+  showMessage("⚠️ Error al cargar los elementos del popup", "warning");
 }
 
 // Valores por defecto

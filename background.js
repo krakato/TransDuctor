@@ -20,7 +20,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // Cargar la clave API cada vez que se recibe un mensaje
     chrome.storage.sync.get(['groqApiKey'], (result) => {
       if (!result || !result.groqApiKey) {
-        console.error("❌ No hay clave API configurada");
+        //console.error("❌ No hay clave API configurada");
         sendResponse({ 
           success: false, 
           error: "⚙️ Configura tu clave de API de Groq en las Opciones de la extensión" 
@@ -41,7 +41,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           sendResponse({ success: true, translation: result });
         })
         .catch(error => {
-          console.error("❌ Error en traducción:", error);
+          //console.error("❌ Error en traducción:", error);
           sendResponse({ success: false, error: error.message });
         });
     });
@@ -115,14 +115,14 @@ Reglas importantes:
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error("❌ API Error:", errorData);
+      //console.error("❌ API Error:", errorData);
       throw new Error(`API Error: ${errorData.error?.message || response.statusText}`);
     }
 
     const data = await response.json();
     
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error("❌ Estructura de respuesta inesperada:", data);
+      //console.error("❌ Estructura de respuesta inesperada:", data);
       throw new Error("Respuesta inesperada de la API");
     }
 
@@ -134,7 +134,7 @@ Reglas importantes:
     
     return translation;
   } catch (error) {
-    console.error("❌ Error al traducir:", error);
+    //console.error("❌ Error al traducir:", error);
     throw error;
   }
 }
@@ -169,7 +169,7 @@ function guardarEnHistorial(texto, traduccion, idiomaOrigen, idiomaDestino) {
       });
     });
   } catch (error) {
-    console.error("❌ Error al guardar en historial:", error);
+    //console.error("❌ Error al guardar en historial:", error);
   }
 }
 
@@ -198,7 +198,7 @@ function limpiarCacheAntiguo() {
       }
     });
   } catch (e) {
-    console.warn("Error limpiando caché:", e);
+    //console.warn("Error limpiando caché:", e);
   }
 }
 
