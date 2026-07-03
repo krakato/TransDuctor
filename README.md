@@ -2,14 +2,19 @@
 
 ![TransDuctor Logo](icons/icon-128.png)
 
-Una extensión de Chrome potente y fácil de usar que traduce cualquier texto al instante usando IA. Simplemente pasa el cursor sobre el texto y obtén la traducción en un tooltip flotante elegante.
+Una extensión de Chrome potente y fácil de usar que traduce cualquier texto al instante usando IA y también ofrece descripciones del texto. Simplemente pasa el cursor sobre el texto y obtén la traducción en un tooltip flotante elegante.
+
+v1.0.0 | Powered by Groq AI
 
 ## ✨ Características
 
 - 🚀 **Traducción instantánea**: Pasa el cursor y espera 2 segundos para obtener la traducción
+- 🧠 **Detección automática inteligente**: Detecta automáticamente si traduces una palabra, selección o párrafo
 - 🌍 **Soporte multiidioma**: Traduce a 50+ idiomas
 - ⚡ **Basado en Groq AI**: Utiliza LLaMA 3 8B para traducciones precisas y rápidas
 - 🎨 **Interfaz inteligente**: Tooltip flotante con tema oscuro/claro personalizable
+- 📜 **Historial de traducciones**: Mantiene un registro de tus últimas 10 traducciones
+- 🔄 **Auto-detección de idioma**: Detecta automáticamente el idioma de origen
 - ⚙️ **Altamente configurable**: Ajusta tiempo de espera, tamaño de fuente, idioma destino
 - 💾 **Exportar/Importar configuración**: Guarda tu configuración y úsala en otros dispositivos
 - 🔒 **Privado**: Funciona directamente con la API, sin intermediarios
@@ -51,19 +56,40 @@ Una extensión de Chrome potente y fácil de usar que traduce cualquier texto al
 ### Uso Básico
 
 1. Abre cualquier página web
-2. Pasa el cursor sobre una palabra o texto
-3. Espera a que aparezca el tooltip con la traducción
-4. ¡Hecho! Haz clic en el tooltip para copiarlo (opcional)
+2. Pasa el cursor sobre una palabra, frase o selecciona un texto
+3. La extensión detecta automáticamente qué traducir:
+   - **Selección**: Si hay texto seleccionado → traduce la selección
+   - **Palabra**: Si pasas el cursor → traduce la palabra bajo el cursor
+   - **Párrafo**: Si no hay palabra clara → traduce el párrafo completo
+4. Espera 2 segundos y verás el tooltip con la traducción
+5. ¡Hecho! Haz clic en el tooltip del historial para copiarlo
 
-### Configuración
+### Configurar API Key
+
+1. Haz clic en el icono de **TransDuctor** en la barra de herramientas
+2. En el popup, desplázate hasta la sección **"Clave API de Groq"**
+3. Pega tu API Key (obtén una en [Groq Console](https://console.groq.com/keys))
+4. Haz clic en **"Guardar"** o espera 1 segundo
+5. ✅ ¡Lista! La clave se guardará de forma segura
+
+### Configuración Básica
 
 1. Haz clic en el icono de TransDuctor en la barra de herramientas
-2. Selecciona "⚙️ Configuración" (esquina superior derecha)
-3. Personaliza:
+2. Personaliza:
    - **Idioma destino**: Elige el idioma a traducir
+   - **Idioma de origen**: Automático o selecciona uno específico
    - **Tiempo de espera**: Ajusta cuánto esperar antes de mostrar la traducción
    - **Tamaño de fuente**: Personaliza el tamaño del texto del tooltip
    - **Tema**: Oscuro o claro
+   - **Requerir Ctrl**: Solo traduce cuando mantienes presionada la tecla Ctrl
+   - **No traducir si idioma es igual**: Evita traducciones innecesarias
+
+### Historial de Traducciones
+
+- Las últimas **10 traducciones** aparecen en el popup
+- Cada entrada muestra: Texto original | Traducción | Idiomas | Hora
+- **Click en cualquier traducción** → Copia el texto
+- **Click 🗑️** → Limpia todo el historial
 
 ## ⚙️ Configuración Avanzada
 
@@ -71,14 +97,26 @@ Una extensión de Chrome potente y fácil de usar que traduce cualquier texto al
 
 ```json
 {
-  "enabled": true,              // Activar/desactivar la extensión
-  "targetLanguage": "inglés",   // Idioma destino
-  "hoverDelay": 2000,           // Tiempo en milisegundos
-  "fontSize": 12,               // Tamaño en píxeles
-  "theme": "dark",              // "dark" o "light"
-  "autoDetectLanguage": false   // Detectar idioma automáticamente
+  "enabled": true,                // Activar/desactivar la extensión
+  "targetLanguage": "inglés",     // Idioma destino
+  "sourceLanguage": "auto",       // "auto" para detectar automáticamente o especificar idioma
+  "translationMode": "word",      // Modo (ahora automático, sin efecto)
+  "hoverDelay": 2000,             // Tiempo en milisegundos antes de mostrar traducción
+  "fontSize": 12,                 // Tamaño en píxeles
+  "theme": "dark",                // "dark" o "light"
+  "requireCtrl": false,           // Si true, solo traduce con Ctrl presionado
+  "skipSameLanguage": true,       // Si true, no traduce si idioma origen = destino
+  "groqApiKey": "gsk_..."         // Tu API Key (almacenada de forma segura)
 }
 ```
+
+### Sobre el Historial
+
+El historial se almacena localmente con un límite de **500 traducciones máximas**:
+- ✅ Se guarda automáticamente
+- ✅ Se accede desde el popup
+- ✅ Puedes limpiar todo con un clic
+- ✅ No se sincroniza entre dispositivos (privado local)
 
 ### Exportar Configuración
 
@@ -128,24 +166,26 @@ TransDuctor/
 └── README.md                  # Este archivo
 ```
 
-## 🔐 Privacidad y Seguridad
+## 🔐 Configurar API Key
 
-- Los textos se envían a la API de Groq para traducción
-- No almacenamos datos personales
-- Puedes usar tu propia API Key de Groq
-- Los datos se procesan con SSL/TLS
+### Pasos para obtener y configurar tu API Key
 
-## 📝 Cambiar API Key
+1. **Obtén una API Key GRATUITA**:
+   - Ve a [Groq Console](https://console.groq.com/keys)
+   - Crea una cuenta (es gratis)
+   - Genera una nueva API Key
 
-Para usar tu propia API Key de Groq:
+2. **Configura en TransDuctor**:
+   - Abre el popup de la extensión
+   - Desplázate hasta "Clave API de Groq"
+   - Pega tu API Key
+   - ✅ Se guardará automáticamente
 
-1. Obtén una API Key en [Groq Console](https://console.groq.com/keys)
-2. Edita el archivo `background.js`
-3. Reemplaza la línea:
-   ```javascript
-   const GROQ_API_KEY = "tu-nueva-api-key-aqui";
-   ```
-4. Recarga la extensión en `chrome://extensions/`
+3. **Seguridad**:
+   - ✅ La clave se guarda localmente en tu navegador (chrome.storage.sync)
+   - ✅ Nunca se expone en el código
+   - ✅ Solo tú tienes acceso a ella
+   - ✅ No compartimos datos con terceros (excepto Groq para traducir)
 
 ## 🚀 Modelos Soportados
 
