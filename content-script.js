@@ -49,13 +49,14 @@ document.addEventListener("keyup", (e) => {
 
 /**
  * Obtener la palabra exacta bajo el cursor del ratón
+ * Soporta acentos y caracteres especiales en español
  */
 function obtenerPalabraBajoPuntero(element, event) {
   try {
     let textNode = null;
     let offset = 0;
 
-    // Intentar con caretPositionFromPoint (recomendado, pero no en todos los navegadores)
+    // Intentar con caretPositionFromPoint (recomendado, estándar moderno)
     if (document.caretPositionFromPoint) {
       const position = document.caretPositionFromPoint(event.clientX, event.clientY);
       if (position && position.offsetNode) {
@@ -80,15 +81,19 @@ function obtenerPalabraBajoPuntero(element, event) {
     const text = textNode.textContent;
     if (!text || text.length === 0) return null;
 
-    // Buscar inicio de palabra
+    // Expresión regular mejorada: incluye letras, números y acentos españoles
+    // Esto detecta mejor las palabras en comparación con /\w/ que puede variar según el locale
+    const wordRegex = /[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ]/;
+
+    // Buscar inicio de palabra retrocediendo desde el cursor
     let inicio = offset;
-    while (inicio > 0 && /\w/.test(text[inicio - 1])) {
+    while (inicio > 0 && wordRegex.test(text[inicio - 1])) {
       inicio--;
     }
 
-    // Buscar fin de palabra
+    // Buscar fin de palabra avanzando desde el cursor
     let fin = offset;
-    while (fin < text.length && /\w/.test(text[fin])) {
+    while (fin < text.length && wordRegex.test(text[fin])) {
       fin++;
     }
 
@@ -299,6 +304,8 @@ function traducirYMostrar(element, event) {
     }
   );
 }
+
+
 
 /**
  * Event listeners para elementos con texto
