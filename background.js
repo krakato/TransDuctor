@@ -82,8 +82,11 @@ async function traducirTexto(texto, idiomaDestino = "inglés", idiomaOrigen = "a
 
 Reglas importantes:
 - Traduce SOLO el texto, sin añadir explicaciones ni comentarios
+- Si el texto contiene nombres propios, mantenlos sin traducir
+- Mantén la estructura y formato del texto original
+- Si el texto contiene jerga o expresiones coloquiales, tradúcelas de manera natural al idioma destino
+- Puedes dar descripciones de palabras técnicas si es necesario, pero no inventes significados
 - Mantén el tono y contexto del original
-- Si el texto contiene acrónimos técnicos, mantenlos en inglés si es necesario
 - Sé conciso y natural en la traducción
 - Devuelve ÚNICAMENTE el texto traducido, nada más`;
 

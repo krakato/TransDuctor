@@ -206,6 +206,23 @@ function removerTooltip() {
 }
 
 /**
+ * Validar si el contexto de la extensión aún es válido
+ */
+function validarContextoExtension() {
+  try {
+    // Intentar acceder a chrome.runtime para detectar contexto invalidado
+    if (!chrome.runtime) {
+      return false;
+    }
+    // Limpiar lastError previo
+    const _ = chrome.runtime.lastError;
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
  * Traducir y mostrar tooltip
  */
 function traducirYMostrar(element, event) {
@@ -248,6 +265,12 @@ function traducirYMostrar(element, event) {
     return;
   }
 
+  // Validar contexto de extensión antes de proceder
+  if (!validarContextoExtension()) {
+    //console.warn("Contexto de extensión invalidado");
+    return;
+  }
+
   isTranslating = true;
 
   // Mostrar "Traduciendo..."
@@ -265,53 +288,73 @@ function traducirYMostrar(element, event) {
     }
   }, 10000);
 
-  // Enviar solicitud de traducción al background
-  chrome.runtime.sendMessage(
-    {
-      action: "translate",
-      text: texto,
-      targetLanguage: settings.targetLanguage,
-      sourceLanguage: settings.sourceLanguage
-    },
-    (response) => {
-      // Limpiar timeout si llegó respuesta
-      clearTimeout(tiempoTimeout);
-      isTranslating = false;
+  try {
+    // Enviar solicitud de traducción al background
+    chrome.runtime.sendMessage(
+      {
+        action: "translate",
+        text: texto,
+        targetLanguage: settings.targetLanguage,
+        sourceLanguage: settings.sourceLanguage
+      },
+      (response) => {
+        // Limpiar timeout si llegó respuesta
+        clearTimeout(tiempoTimeout);
+        isTranslating = false;
 
-      // Verificar si hay error en el runtime primero
-      if (chrome.runtime.lastError) {
-        //console.error("Error en runtime:", chrome.runtime.lastError);
-        if (translatorTooltip) {
-          crearTooltip("❌ Error: " + chrome.runtime.lastError.message, rect);
+        // Verificar si hay error en el runtime primero
+        if (chrome.runtime.lastError) {
+          const errorMsg = chrome.runtime.lastError.message;
+          // Ignorar silenciosamente errores de contexto invalidado
+          if (errorMsg && errorMsg.includes("Extension context invalidated")) {
+            //console.warn("Contexto de extensión invalidado");
+            return;
+          }
+          //console.error("Error en runtime:", chrome.runtime.lastError);
+          if (translatorTooltip) {
+            crearTooltip("❌ Error: " + errorMsg, rect);
+          }
+          return;
         }
-        return;
-      }
 
-      // Validar que la respuesta exista
-      if (!response) {
-        //console.error("No se recibió respuesta del background script");
-        if (translatorTooltip) {
-          crearTooltip("❌ Sin respuesta", rect);
+        // Validar que la respuesta exista
+        if (!response) {
+          //console.error("No se recibió respuesta del background script");
+          if (translatorTooltip) {
+            crearTooltip("❌ Sin respuesta", rect);
+          }
+          return;
         }
-        return;
-      }
 
-      // Manejar respuesta exitosa
-      if (response.success && response.translation) {
-        if (translatorTooltip) {
-          crearTooltip(response.translation, rect);
+        // Manejar respuesta exitosa
+        if (response.success && response.translation) {
+          if (translatorTooltip) {
+            crearTooltip(response.translation, rect);
+          }
+          lastTranslatedElement = element;
+        } else {
+          // Manejar error en la respuesta
+          const errorMsg = response.error || "Error en traducción";
+          if (translatorTooltip) {
+            crearTooltip("❌ " + errorMsg, rect);
+          }
+          //console.error("Error en traducción:", errorMsg);
         }
-        lastTranslatedElement = element;
-      } else {
-        // Manejar error en la respuesta
-        const errorMsg = response.error || "Error en traducción";
-        if (translatorTooltip) {
-          crearTooltip("❌ " + errorMsg, rect);
-        }
-        //console.error("Error en traducción:", errorMsg);
       }
+    );
+  } catch (error) {
+    clearTimeout(tiempoTimeout);
+    isTranslating = false;
+    // Manejar específicamente el error de contexto invalidado
+    if (error.message && error.message.includes("Extension context invalidated")) {
+      //console.warn("Contexto de extensión invalidado durante sendMessage");
+      return;
     }
-  );
+    //console.error("Error al enviar mensaje:", error);
+    if (translatorTooltip) {
+      crearTooltip("❌ Error: " + error.message, rect);
+    }
+  }
 }
 
 
