@@ -56,7 +56,7 @@ function loadSettings() {
   });
 }
 
-// Guardar configuración
+// Guardar configuración (SIN tocar la API key)
 function saveSettings() {
   const settings = {
     enabled: enableToggle.checked,
@@ -67,12 +67,26 @@ function saveSettings() {
     skipSameLanguage: skipSameLanguageCheckbox.checked,
     hoverDelay: parseInt(hoverDelaySlider.value),
     fontSize: parseInt(fontSizeSlider.value),
-    theme: themeSelect.value,
-    groqApiKey: groqApiKeyInput.value.trim() // Guardar la clave API
+    theme: themeSelect.value
+    // ✓ NO incluimos groqApiKey aquí
   };
 
   chrome.storage.sync.set(settings, () => {
     showMessage("✓ Configuración guardada", "success");
+  });
+}
+
+// Guardar SOLO la clave API (función separada)
+function saveApiKey() {
+  const apiKey = groqApiKeyInput.value.trim();
+  
+  if (!apiKey) {
+    showMessage("⚠️ Ingresa una clave API de Groq", "warning");
+    return;
+  }
+
+  chrome.storage.sync.set({ groqApiKey: apiKey }, () => {
+    showMessage("✓ Clave API guardada correctamente", "success");
   });
 }
 
@@ -105,7 +119,7 @@ safeAddListener(translationModeSelect, "change", saveSettings);
 safeAddListener(requireCtrlCheckbox, "change", saveSettings);
 safeAddListener(skipSameLanguageCheckbox, "change", saveSettings);
 safeAddListener(themeSelect, "change", saveSettings);
-safeAddListener(groqApiKeyInput, "change", saveSettings);
+// API Key tiene su propio listener (ver arriba)
 
 if (hoverDelaySlider) {
   hoverDelaySlider.addEventListener("input", (e) => {
@@ -125,8 +139,8 @@ if (fontSizeSlider) {
   });
 }
 
-// Guardar cambios en la clave API
-safeAddListener(groqApiKeyInput, "change", saveSettings);
+// Guardar cambios en la clave API (función separada)
+safeAddListener(groqApiKeyInput, "change", saveApiKey);
 
 // Toglear visibilidad de la clave API
 if (toggleApiKeyVisibilityBtn && groqApiKeyInput) {
@@ -168,10 +182,19 @@ if (testTranslateBtn) {
 // Restaurar valores por defecto
 if (resetSettingsBtn) {
   resetSettingsBtn.addEventListener("click", () => {
-    if (confirm("¿Restaurar todos los valores por defecto?")) {
-      chrome.storage.sync.set(defaultSettings, () => {
-        loadSettings();
-        showMessage("✓ Valores restaurados", "success");
+    if (confirm("¿Restaurar todos los valores por defecto? La clave API se conservará.")) {
+      // Primero obtener la API key actual
+      chrome.storage.sync.get(["groqApiKey"], (result) => {
+        const apiKey = result.groqApiKey || "";
+        // Restaurar defaults pero preservar API key
+        const settingsToReset = {
+          ...defaultSettings,
+          groqApiKey: apiKey
+        };
+        chrome.storage.sync.set(settingsToReset, () => {
+          loadSettings();
+          showMessage("✓ Valores restaurados", "success");
+        });
       });
     }
   });

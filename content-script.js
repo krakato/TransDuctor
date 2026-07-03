@@ -5,6 +5,8 @@ let isTranslating = false;
 let translatorTooltip = null;
 let lastTranslatedElement = null;
 let ctrlPressed = false;
+let lastWord = null; // Rastrear la palabra anterior bajo el cursor
+let wordChangeTimeout = null; // Timeout para detectar cambios de palabra
 
 // Obtener configuración
 let settings = {
@@ -141,21 +143,24 @@ function crearTooltip(traduccion, rect) {
   tooltip.id = "transductor-tooltip";
   tooltip.textContent = traduccion;
   
-  // Estilos del tooltip
+  // Estilos del tooltip mejorados
+  const isLightMode = settings.theme === "light";
   const estilos = `
     position: fixed;
-    background: ${settings.theme === "dark" ? "#1e1e1e" : "#fff"};
-    color: ${settings.theme === "dark" ? "#fff" : "#000"};
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-family: 'Courier New', monospace;
+    background: ${isLightMode ? "#fbf7aa" : "#1e1e1e"};
+    color: ${isLightMode ? "#000" : "#fff"};
+    padding: 12px 16px;
+    border-radius: 14px;
+    font-family: Consolas,'Courier New', monospace;
     font-size: ${settings.fontSize}px;
     z-index: 999999999;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    max-width: 300px;
+    box-shadow: 0 6px 20px rgba(25, 24, 24, 0.8);
+    max-width: 600px;
     word-wrap: break-word;
-    border: 1px solid ${settings.theme === "dark" ? "#444" : "#ddd"};
+    overflow-x: hidden;
+    border: 2px solid ${isLightMode ? "#d4a574" : "#444"};
     animation: slideInDown 0.3s ease-out;
+    line-height: 1.4;
   `;
   
   tooltip.setAttribute("style", estilos);
@@ -310,6 +315,8 @@ function traducirYMostrar(element, event) {
 /**
  * Event listeners para elementos con texto
  */
+
+// Detectar entrada al elemento (mantener para limpiar estado)
 document.addEventListener(
   "mouseenter",
   (event) => {
@@ -333,27 +340,76 @@ document.addEventListener(
       return;
     }
 
-    // Limpiar timeout anterior
+    // Limpiar timeouts anteriores
     clearTimeout(hoverTimeout);
-    removerTooltip();
+    clearTimeout(wordChangeTimeout);
     currentElement = element;
-
-    // Configurar nuevo timeout
-    hoverTimeout = setTimeout(() => {
-      if (currentElement === element && !isTranslating) {
-        traducirYMostrar(element, event);
-      }
-    }, settings.hoverDelay);
+    lastWord = null; // Resetear palabra anterior al entrar
   },
   true
 );
 
+// Detectar salida del elemento
 document.addEventListener(
   "mouseleave",
   (event) => {
     clearTimeout(hoverTimeout);
+    clearTimeout(wordChangeTimeout);
     hoverTimeout = null;
+    wordChangeTimeout = null;
     currentElement = null;
+    lastWord = null;
+    removerTooltip();
+  },
+  true
+);
+
+// Detectar movimiento del mouse para cambios de palabra en tiempo real
+document.addEventListener(
+  "mousemove",
+  (event) => {
+    if (!settings.enabled || !currentElement || isTranslating) {
+      return;
+    }
+
+    const element = event.target;
+
+    // Validar que sea un Element node
+    if (!element || element.nodeType !== Node.ELEMENT_NODE) {
+      return;
+    }
+
+    // Obtener la palabra actual bajo el cursor
+    let palabraActual = "";
+    if (settings.translationMode === "word") {
+      palabraActual = obtenerPalabraBajoPuntero(element, event) || "";
+    } else if (settings.translationMode === "selection") {
+      palabraActual = obtenerTextoSeleccionado();
+    } else if (settings.translationMode === "ctrl") {
+      if (!ctrlPressed) return;
+      palabraActual = obtenerTextoDelElemento(element);
+    } else {
+      // paragraph mode
+      palabraActual = obtenerTextoDelElemento(element);
+    }
+
+    // Detectar si cambió la palabra
+    if (palabraActual && palabraActual !== lastWord && palabraActual.length > 0 && palabraActual.length <= 500) {
+      lastWord = palabraActual;
+
+      // Limpiar timeout anterior si existe
+      clearTimeout(wordChangeTimeout);
+
+      // Borrar tooltip actual inmediatamente
+      removerTooltip();
+
+      // Esperar 2 segundos antes de traducir la nueva palabra
+      wordChangeTimeout = setTimeout(() => {
+        if (lastWord === palabraActual && !isTranslating && settings.enabled) {
+          traducirYMostrar(element, event);
+        }
+      }, settings.hoverDelay); // Usar hoverDelay (configurado a 2000ms por defecto)
+    }
   },
   true
 );
@@ -382,7 +438,8 @@ style.textContent = `
   }
 
   #transductor-tooltip:hover {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 24px rgba(128, 128, 128, 0.5);
+    transform: translateY(-2px);
   }
 `;
 document.documentElement.appendChild(style);
