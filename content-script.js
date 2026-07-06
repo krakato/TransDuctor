@@ -102,7 +102,7 @@ function obtenerPalabraBajoPuntero(element, event) {
     const palabra = text.substring(inicio, fin).trim();
     return palabra.length > 0 ? palabra : null;
   } catch (e) {
-    console.error("Error en obtenerPalabraBajoPuntero:", e);
+    console.log("Error en obtenerPalabraBajoPuntero:", e);
     return null;
   }
 }
@@ -425,7 +425,8 @@ document.addEventListener(
     if (!element || element.nodeType !== Node.ELEMENT_NODE) {
       return;
     }
-
+    element.style.color = "blue"; // Cambiar color del elemento al pasar el mouse
+    
     // Obtener la palabra actual bajo el cursor
     let palabraActual = "";
     if (settings.translationMode === "word") {
@@ -439,7 +440,8 @@ document.addEventListener(
       // paragraph mode
       palabraActual = obtenerTextoDelElemento(element);
     }
-
+    
+    element.style.color = "inherit"; // Resetear color del elemento
     // Detectar si cambió la palabra
     if (palabraActual && palabraActual !== lastWord && palabraActual.length > 0 && palabraActual.length <= 500) {
       lastWord = palabraActual;
