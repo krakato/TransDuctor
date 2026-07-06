@@ -1,6 +1,6 @@
 // Configuración de la API de Groq
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
-const DEFAULT_MODEL = "llama-3.1-8b-instant"; // Modelo activo (llama3-8b-8192 fue deprecado)
+const DEFAULT_MODEL = "llama-3.3-70b-versatile"; // Modelo activo (llama3-8b-8192 fue deprecado)
 let GROQ_API_KEY = null; // Se carga desde chrome.storage
 
 // Cargar la API key desde chrome.storage al iniciar
@@ -69,26 +69,15 @@ async function traducirTexto(texto, idiomaDestino = "inglés", idiomaOrigen = "a
   }
 
   try {
-    // Construir el prompt del sistema basado en si se detecta o no el idioma
-    let systemPrompt = `Eres un traductor profesional y experto.`;
-    
-    if (idiomaOrigen && idiomaOrigen !== "auto") {
-      systemPrompt += ` Tu tarea es traducir el texto del ${idiomaOrigen} al ${idiomaDestino}.`;
-    } else {
-      systemPrompt += ` Tu tarea es detectar el idioma del texto y traducirlo al ${idiomaDestino}.`;
-    }
-    
-    systemPrompt += ` 
-
-Reglas importantes:
-- Traduce SOLO el texto, sin añadir explicaciones ni comentarios
-- Si el texto contiene nombres propios, mantenlos sin traducir
-- Mantén la estructura y formato del texto original
-- Si el texto contiene jerga o expresiones coloquiales, tradúcelas de manera natural al idioma destino
-- Puedes dar descripciones de palabras técnicas si es necesario, pero no inventes significados
-- Mantén el tono y contexto del original
-- Sé conciso y natural en la traducción
-- Devuelve ÚNICAMENTE el texto traducido, nada más`;
+    // System prompt optimizado y conciso
+    const systemPrompt = `Eres un traductor y analista de datos de alta precisión. Tu objetivo es traducir el texto proveído y generar una descripción técnica basada ÚNICAMENTE en la información suministrada.
+    1. TRADUCCIÓN LITERAL Y CONTEXTUAL: Traduce respetando el contexto técnico. No uses sinónimos ambiguos ni adaptaciones libres que cambien el significado original.
+    2. PROHIBIDO ALUCINAR: No agregues, asumas, ni deduzcas información que no esté explícitamente escrita en el texto de origen. Si el texto no menciona un detalle, tu descripción no debe inventarlo.
+    3. CONTROL DE ERRORES: Si una palabra es un nombre propio o una marca sin traducción directa, déjala en su idioma original.
+    4. HONESTIDAD: Si el texto de entrada es insuficiente para generar una descripción lógica, responde exactamente: "Información insuficiente para generar descripción".
+    5. TRADUCCIÓN DIRECTA: Traduce el texto directamente al idioma solicitado manteniendo el tono, el contexto y los modismos locales.
+    6. Si en el texto hay términos técnicos puedes ofrecer una descripción, anteponiendo antes "Nota: y luego la descripción.
+    7. Si no hay nada que traducir porque no se detecta texto traducible, devolver solo la palabra "FALSE"`;
 
     console.log("📤 Enviando request a Groq API...");
     const response = await fetch(GROQ_API_URL, {
@@ -106,11 +95,11 @@ Reglas importantes:
           },
           {
             role: "user",
-            content: texto
+            content: `Traduce el siguiente texto al idioma ${idiomaDestino}: "${texto}"`
           }
         ],
-        temperature: 0.3,
-        max_tokens: 1024
+        temperature: 0.1,
+        max_completion_tokens: 1024
       })
     });
 
@@ -130,9 +119,16 @@ Reglas importantes:
     }
 
     const translation = data.choices[0].message.content.trim();
+    
+    // Si no hay texto traducible, retornar null sin hacer nada
+    if (translation === "FALSE") {
+      console.log("⚠️ Sin contenido traducible detectado");
+      return null;
+    }
+    
     console.log("✓ Traducción exitosa:", translation);
     
-    // Guardar en el historial
+    // Guardar en el historial (solo si hay traducción válida)
     guardarEnHistorial(texto, translation, idiomaOrigen, idiomaDestino);
     
     return translation;
