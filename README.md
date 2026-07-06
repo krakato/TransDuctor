@@ -4,7 +4,7 @@
 
 Una extensión de Chrome potente y fácil de usar que traduce cualquier texto al instante usando IA y también ofrece descripciones del texto. Simplemente pasa el cursor sobre el texto y obtén la traducción en un tooltip flotante elegante.
 
-v1.0.0 | Powered by Groq AI
+v1.5.0 | Powered by Groq AI
 
 ## ✨ Características
 
