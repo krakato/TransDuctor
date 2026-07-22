@@ -425,7 +425,6 @@ document.addEventListener(
     if (!element || element.nodeType !== Node.ELEMENT_NODE) {
       return;
     }
-    element.style.color = "blue"; // Cambiar color del elemento al pasar el mouse
     
     // Obtener la palabra actual bajo el cursor
     let palabraActual = "";
@@ -441,7 +440,6 @@ document.addEventListener(
       palabraActual = obtenerTextoDelElemento(element);
     }
     
-    element.style.color = "inherit"; // Resetear color del elemento
     // Detectar si cambió la palabra
     if (palabraActual && palabraActual !== lastWord && palabraActual.length > 0 && palabraActual.length <= 500) {
       lastWord = palabraActual;
