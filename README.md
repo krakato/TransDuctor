@@ -271,4 +271,4 @@ Comprueba regularmente si hay nuevas versiones:
 
 Para más información, contacta al desarrollador o visita nuestro sitio web.
 
-**TransDuctor v1.0.0** | Powered by Groq AI ✨
+**TransDuctor v2.0.0** | 💖 Alfonso González ✨ Powered by Groq AI ✨
