@@ -1,6 +1,6 @@
 {
   "name": "transductor",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Traductor inteligente para Chrome basado en IA Groq",
   "type": "module",
   "keywords": [
