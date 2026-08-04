@@ -30,7 +30,7 @@ const defaultSettings = {
   targetLanguage: "inglés",
   sourceLanguage: "auto",
   translationMode: "word",
-  requireCtrl: false,
+  requireCtrl: true,
   skipSameLanguage: true,
   hoverDelay: 2000,
   fontSize: 12,

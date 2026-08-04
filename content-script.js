@@ -7,6 +7,10 @@ let lastTranslatedElement = null;
 let ctrlPressed = false;
 let lastWord = null; // Rastrear la palabra anterior bajo el cursor
 let wordChangeTimeout = null; // Timeout para detectar cambios de palabra
+let lastCursorX = 0; // Última posición X del cursor
+let lastCursorY = 0; // Última posición Y del cursor
+
+console.log("🚀 TransDuctor content-script cargado");
 
 // Obtener configuración
 let settings = {
@@ -14,7 +18,7 @@ let settings = {
   targetLanguage: "inglés",
   sourceLanguage: "auto",
   translationMode: "word",
-  requireCtrl: false,
+  requireCtrl: true,
   skipSameLanguage: true,
   hoverDelay: 2000,
   autoDetectLanguage: false,
@@ -25,29 +29,114 @@ let settings = {
 // Cargar configuración al iniciar
 chrome.storage.sync.get(settings, (stored) => {
   settings = stored;
+  console.log("✅ Config cargada - requireCtrl:", settings.requireCtrl);
+  console.log("📋 Configuración completa:", {
+    requireCtrl: settings.requireCtrl,
+    enabled: settings.enabled,
+    hoverDelay: settings.hoverDelay,
+    translationMode: settings.translationMode
+  });
 });
 
-// Escuchar cambios en almacenamiento
+// Escuchar cambios en almacenamiento (cuando se cambia en options.html)
 chrome.storage.onChanged.addListener((changes) => {
   for (let key in changes) {
     if (key in settings) {
+      const oldValue = settings[key];
       settings[key] = changes[key].newValue;
+      if (key === "requireCtrl") {
+        console.log(`🔄 ACTUALIZACIÓN EN VIVO: requireCtrl cambió de ${oldValue} a ${settings[key]}`);
+      }
     }
   }
 });
 
-// Rastrear tecla Ctrl
+// ===== KEYBOARD LISTENERS =====
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Control" || e.ctrlKey) {
+  if (e.key === "Control") {
     ctrlPressed = true;
+    console.log("✓ Control presionado");
   }
 }, true);
 
 document.addEventListener("keyup", (e) => {
-  if (e.key === "Control" || !e.ctrlKey) {
+  if (e.key === "Control") {
     ctrlPressed = false;
+    console.log("✗ Control soltado");
   }
 }, true);
+
+// ===== MOUSE LISTENERS (STRATEGY: use simple mousemove on document) =====
+console.log("🚀 Registrando listeners de mouse...");
+
+document.addEventListener("mousemove", function handleMouseMove(event) {
+  // Contar silenciosamente mousemove
+  if (!window._mmCount) window._mmCount = 0;
+  window._mmCount++;
+  
+  if (!settings.enabled) return;
+  if (!ctrlPressed && settings.requireCtrl) {
+    return;
+  }
+
+  const element = event.target;
+  if (!element || element.nodeType !== Node.ELEMENT_NODE) {
+    return;
+  }
+
+  // Filtrar elementos
+  if (
+    element.tagName === "SCRIPT" ||
+    element.tagName === "STYLE" ||
+    element.tagName === "NOSCRIPT" ||
+    element.id === "transductor-tooltip" ||
+    element.closest("#transductor-tooltip")
+  ) {
+    return;
+  }
+
+  // Si es un elemento nuevo, registrarlo
+  if (currentElement !== element) {
+    currentElement = element;
+    console.log(`📍 Nuevo elemento: ${element.tagName} (mousemove #${window._mmCount})`);
+    clearTimeout(wordChangeTimeout);
+    lastWord = null;
+  }
+
+  // Si no estamos en un elemento válido, no hacer nada
+  if (!currentElement) return;
+
+  // Obtener palabra bajo cursor
+  let palabraActual = "";
+  if (settings.translationMode === "word") {
+    palabraActual = obtenerPalabraBajoPuntero(element, event) || "";
+  } else if (settings.translationMode === "selection") {
+    palabraActual = obtenerTextoSeleccionado();
+  } else {
+    palabraActual = obtenerTextoDelElemento(element);
+  }
+
+  // Guardar coordenadas
+  if (palabraActual && palabraActual !== lastWord) {
+    lastCursorX = event.clientX;
+    lastCursorY = event.clientY;
+    lastWord = palabraActual;
+    
+    console.log(`💬 Palabra detectada: "${palabraActual.substring(0, 20)}..."`);
+
+    clearTimeout(wordChangeTimeout);
+    removerTooltip();
+
+    wordChangeTimeout = setTimeout(() => {
+      if (lastWord === palabraActual && !isTranslating && settings.enabled) {
+        console.log(`⏳ Llamando traducirYMostrar...`);
+        traducirYMostrar(element);
+      }
+    }, settings.hoverDelay);
+  }
+}, false); // Cambié de true a false (capture phase desactivada)
+
+console.log("✅ Listener de mousemove registrado (sin capture)");
 
 /**
  * Obtener la palabra exacta bajo el cursor del ratón
@@ -135,7 +224,7 @@ function obtenerTextoDelElemento(element) {
 /**
  * Crear tooltip flotante para la traducción
  */
-function crearTooltip(traduccion, rect) {
+function crearTooltip(traduccion, posX, posY) {
   // Remover tooltip anterior
   removerTooltip();
 
@@ -166,14 +255,14 @@ function crearTooltip(traduccion, rect) {
   tooltip.setAttribute("style", estilos);
   document.body.appendChild(tooltip);
 
-  // Posicionar el tooltip
+  // Posicionar el tooltip cerca del cursor
   const tooltipRect = tooltip.getBoundingClientRect();
-  let top = rect.top - tooltipRect.height - 10;
-  let left = rect.left + (rect.width - tooltipRect.width) / 2;
+  let top = posY - tooltipRect.height - 10;
+  let left = posX - tooltipRect.width / 2;
 
   // Ajustar si sale de pantalla
   if (top < 0) {
-    top = rect.bottom + 10;
+    top = posY + 10;
   }
   if (left < 0) {
     left = 10;
@@ -225,7 +314,7 @@ function validarContextoExtension() {
 /**
  * Traducir y mostrar tooltip
  */
-function traducirYMostrar(element, event) {
+function traducirYMostrar(element) {
   if (isTranslating || !settings.enabled) return;
 
   // Validar que sea un Element node
@@ -247,13 +336,8 @@ function traducirYMostrar(element, event) {
   if (textoSeleccionado) {
     texto = textoSeleccionado;
   } else {
-    // 2. Si no hay selección: intenta obtener palabra bajo cursor
-    texto = obtenerPalabraBajoPuntero(element, event);
-    
-    // 3. Fallback: Si no encontró palabra, usa párrafo completo
-    if (!texto || texto.length === 0) {
-      texto = obtenerTextoDelElemento(element);
-    }
+    // 2. Si no hay selección: usa la palabra ya almacenada en lastWord
+    texto = lastWord || "";
   }
 
   if (!texto || texto.length === 0 || texto.length > 500) {
@@ -273,9 +357,15 @@ function traducirYMostrar(element, event) {
 
   isTranslating = true;
 
+  // Usar coordenadas guardadas
+  const posX = lastCursorX;
+  const posY = lastCursorY;
+
+  console.log(`📍 Iniciando traducción en posición: ${posX}, ${posY}`);
+  console.log(`📝 Texto a traducir: "${texto.substring(0, 50)}..."`);
+
   // Mostrar "Traduciendo..."
-  const rect = element.getBoundingClientRect();
-  crearTooltip("⌛ Traduciendo...", rect);
+  crearTooltip("⌛ Traduciendo...", posX, posY);
 
   // Timeout para errores de conexión (10 segundos)
   let tiempoTimeout = setTimeout(() => {
@@ -283,7 +373,7 @@ function traducirYMostrar(element, event) {
       isTranslating = false;
       //console.error("Timeout: No se recibió respuesta del background");
       if (translatorTooltip) {
-        crearTooltip("❌ Tiempo de espera agotado", rect);
+        crearTooltip("❌ Tiempo de espera agotado", posX, posY);
       }
     }
   }, 10000);
@@ -302,6 +392,8 @@ function traducirYMostrar(element, event) {
         clearTimeout(tiempoTimeout);
         isTranslating = false;
 
+        console.log(`📨 Respuesta recibida:`, response);
+
         // Verificar si hay error en el runtime primero
         if (chrome.runtime.lastError) {
           const errorMsg = chrome.runtime.lastError.message;
@@ -312,7 +404,7 @@ function traducirYMostrar(element, event) {
           }
           //console.error("Error en runtime:", chrome.runtime.lastError);
           if (translatorTooltip) {
-            crearTooltip("❌ Error: " + errorMsg, rect);
+            crearTooltip("❌ Error: " + errorMsg, posX, posY);
           }
           return;
         }
@@ -321,22 +413,24 @@ function traducirYMostrar(element, event) {
         if (!response) {
           //console.error("No se recibió respuesta del background script");
           if (translatorTooltip) {
-            crearTooltip("❌ Sin respuesta", rect);
+            crearTooltip("❌ Sin respuesta", posX, posY);
           }
           return;
         }
 
         // Manejar respuesta exitosa
         if (response.success && response.translation) {
+          console.log(`✅ Traducción exitosa: "${response.translation.substring(0, 50)}..."`);
           if (translatorTooltip) {
-            crearTooltip(response.translation, rect);
+            crearTooltip(response.translation, posX, posY);
           }
           lastTranslatedElement = element;
         } else {
           // Manejar error en la respuesta
           const errorMsg = response.error || "Error en traducción";
+          console.warn(`⚠️ Error en traducción:`, errorMsg);
           if (translatorTooltip) {
-            crearTooltip("❌ " + errorMsg, rect);
+            crearTooltip("❌ " + errorMsg, posX, posY);
           }
           //console.error("Error en traducción:", errorMsg);
         }
@@ -352,7 +446,7 @@ function traducirYMostrar(element, event) {
     }
     //console.error("Error al enviar mensaje:", error);
     if (translatorTooltip) {
-      crearTooltip("❌ Error: " + error.message, rect);
+      crearTooltip("❌ Error: " + error.message, posX, posY);
     }
   }
 }
@@ -363,103 +457,8 @@ function traducirYMostrar(element, event) {
  * Event listeners para elementos con texto
  */
 
-// Detectar entrada al elemento (mantener para limpiar estado)
-document.addEventListener(
-  "mouseenter",
-  (event) => {
-    if (!settings.enabled) return;
-
-    const element = event.target;
-
-    // Validar que sea un Element node (no TEXT_NODE)
-    if (!element || element.nodeType !== Node.ELEMENT_NODE) {
-      return;
-    }
-
-    // Filtrar elementos que no queremos traducir
-    if (
-      element.tagName === "SCRIPT" ||
-      element.tagName === "STYLE" ||
-      element.tagName === "NOSCRIPT" ||
-      element.id === "transductor-tooltip" ||
-      element.closest("#transductor-tooltip")
-    ) {
-      return;
-    }
-
-    // Limpiar timeouts anteriores
-    clearTimeout(hoverTimeout);
-    clearTimeout(wordChangeTimeout);
-    currentElement = element;
-    lastWord = null; // Resetear palabra anterior al entrar
-  },
-  true
-);
-
-// Detectar salida del elemento
-document.addEventListener(
-  "mouseleave",
-  (event) => {
-    clearTimeout(hoverTimeout);
-    clearTimeout(wordChangeTimeout);
-    hoverTimeout = null;
-    wordChangeTimeout = null;
-    currentElement = null;
-    lastWord = null;
-    removerTooltip();
-  },
-  true
-);
-
-// Detectar movimiento del mouse para cambios de palabra en tiempo real
-document.addEventListener(
-  "mousemove",
-  (event) => {
-    if (!settings.enabled || !currentElement || isTranslating) {
-      return;
-    }
-
-    const element = event.target;
-
-    // Validar que sea un Element node
-    if (!element || element.nodeType !== Node.ELEMENT_NODE) {
-      return;
-    }
-    
-    // Obtener la palabra actual bajo el cursor
-    let palabraActual = "";
-    if (settings.translationMode === "word") {
-      palabraActual = obtenerPalabraBajoPuntero(element, event) || "";
-    } else if (settings.translationMode === "selection") {
-      palabraActual = obtenerTextoSeleccionado();
-    } else if (settings.translationMode === "ctrl") {
-      if (!ctrlPressed) return;
-      palabraActual = obtenerTextoDelElemento(element);
-    } else {
-      // paragraph mode
-      palabraActual = obtenerTextoDelElemento(element);
-    }
-    
-    // Detectar si cambió la palabra
-    if (palabraActual && palabraActual !== lastWord && palabraActual.length > 0 && palabraActual.length <= 500) {
-      lastWord = palabraActual;
-
-      // Limpiar timeout anterior si existe
-      clearTimeout(wordChangeTimeout);
-
-      // Borrar tooltip actual inmediatamente
-      removerTooltip();
-
-      // Esperar 2 segundos antes de traducir la nueva palabra
-      wordChangeTimeout = setTimeout(() => {
-        if (lastWord === palabraActual && !isTranslating && settings.enabled) {
-          traducirYMostrar(element, event);
-        }
-      }, settings.hoverDelay); // Usar hoverDelay (configurado a 2000ms por defecto)
-    }
-  },
-  true
-);
+// [LISTENERS INTEGRADOS ARRIBA EN LA SECCIÓN DE KEYBOARD LISTENERS]
+// mousemove ya está registrado con toda la lógica integrada
 
 /**
  * Agregar estilos CSS para animaciones

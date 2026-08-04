@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "TransDuctor - Traductor Inteligente",
-  "version": "1.5.0",
+  "name": "Transductor: Traductor IA inteligente con Llama 3.3",
+  "version": "2.2.0",
   "description": "Traduce texto instantáneamente con solo pasar el cursor. Soporte para 50+ idiomas usando IA.",
   "permissions": [
     "storage",

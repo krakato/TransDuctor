@@ -32,7 +32,7 @@ const defaultSettings = {
   targetLanguage: "inglés",
   sourceLanguage: "auto",
   translationMode: "word",
-  requireCtrl: false,
+  requireCtrl: true,  // ✓ Cambié a true para coincidir con content-script.js
   skipSameLanguage: true,
   hoverDelay: 2000,
   fontSize: 12,
@@ -47,7 +47,9 @@ function loadSettings() {
     targetLanguageSelect.value = settings.targetLanguage;
     sourceLanguageSelect.value = settings.sourceLanguage || "auto";
     translationModeSelect.value = settings.translationMode || "word";
-    requireCtrlCheckbox.checked = settings.requireCtrl || false;
+    // ✓ Mejorado: usar Boolean() para garantizar true/false
+    requireCtrlCheckbox.checked = Boolean(settings.requireCtrl);
+    console.log(`✅ requireCtrl cargado: ${requireCtrlCheckbox.checked}`);
     skipSameLanguageCheckbox.checked = settings.skipSameLanguage !== false;
     hoverDelaySlider.value = settings.hoverDelay;
     hoverValue.textContent = settings.hoverDelay + "ms";
@@ -74,8 +76,25 @@ function saveSettings() {
     // ✓ NO incluimos groqApiKey aquí
   };
 
+  console.log(`🔧 Guardando settings - requireCtrl: ${settings.requireCtrl}`);
+  
   chrome.storage.sync.set(settings, () => {
-    showMessage("✓ Configuración guardada", "success");
+    // Verificar que se guardó correctamente
+    chrome.storage.sync.get(["requireCtrl"], (result) => {
+      const guardado = result.requireCtrl;
+      console.log(`✅ Verificación post-guardado - requireCtrl en storage: ${guardado}`);
+      
+      if (guardado === settings.requireCtrl) {
+        showMessage("✓ Configuración guardada correctamente", "success");
+      } else {
+        console.warn(`⚠️ INCONSISTENCIA: guardado=${guardado}, esperado=${settings.requireCtrl}`);
+        showMessage("⚠️ Error al guardar requireCtrl", "error");
+        // Intentar de nuevo
+        setTimeout(() => {
+          chrome.storage.sync.set({ requireCtrl: settings.requireCtrl });
+        }, 100);
+      }
+    });
   });
 }
 
@@ -95,7 +114,13 @@ enabledCheckbox.addEventListener("change", saveSettings);
 targetLanguageSelect.addEventListener("change", saveSettings);
 sourceLanguageSelect.addEventListener("change", saveSettings);
 translationModeSelect.addEventListener("change", saveSettings);
-requireCtrlCheckbox.addEventListener("change", saveSettings);
+
+// ✓ Listener especial para requireCtrl con logging
+requireCtrlCheckbox.addEventListener("change", (e) => {
+  console.log(`📝 Click en requireCtrl checkbox - nuevo valor: ${e.target.checked}`);
+  saveSettings();
+});
+
 skipSameLanguageCheckbox.addEventListener("change", saveSettings);
 themeSelect.addEventListener("change", saveSettings);
 autoDetectCheckbox.addEventListener("change", saveSettings);
