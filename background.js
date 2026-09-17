@@ -101,7 +101,7 @@ async function traducirTexto(texto, idiomaDestino = "inglés", idiomaOrigen = "a
             content: `Traduce el siguiente texto al idioma ${idiomaDestino}: "${texto}"`
           }
         ],
-        temperature: 0.1,
+        temperature: 0.9,
         max_completion_tokens: 2048
       })
     });
