@@ -11,7 +11,7 @@ v1.5.0 | Powered by Groq AI
 - 🚀 **Traducción instantánea**: Pasa el cursor y espera 2 segundos para obtener la traducción
 - 🧠 **Detección automática inteligente**: Detecta automáticamente si traduces una palabra, selección o párrafo
 - 🌍 **Soporte multiidioma**: Traduce a 50+ idiomas
-- ⚡ **Basado en Groq AI**: Utiliza LLaMA 3 8B para traducciones precisas y rápidas
+- ⚡ **Basado en Groq AI**: Utiliza gpt-oss-120b para traducciones precisas y rápidas
 - 🎨 **Interfaz inteligente**: Tooltip flotante con tema oscuro/claro personalizable
 - 📜 **Historial de traducciones**: Mantiene un registro de tus últimas 10 traducciones
 - 🔄 **Auto-detección de idioma**: Detecta automáticamente el idioma de origen

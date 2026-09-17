@@ -1,6 +1,9 @@
 // Configuración de la API de Groq
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
-const DEFAULT_MODEL = "llama-3.3-70b-versatile"; // Modelo activo (llama3-8b-8192 fue deprecado)
+// ✓ ACTUALIZADO: Migración de llama-3.3-70b (discontinuado 16/08/2026) a openai/gpt-oss-120b
+// Modelo oficial recomendado por Groq: https://console.groq.com/docs/model/openai/gpt-oss-120b
+// Alternativa: "qwen-2.5-72b" si prefieres modelo Qwen
+const DEFAULT_MODEL = "openai/gpt-oss-120b";
 let GROQ_API_KEY = null; // Se carga desde chrome.storage
 
 // Cargar la API key desde chrome.storage al iniciar
@@ -99,7 +102,7 @@ async function traducirTexto(texto, idiomaDestino = "inglés", idiomaOrigen = "a
           }
         ],
         temperature: 0.1,
-        max_completion_tokens: 1024
+        max_completion_tokens: 2048
       })
     });
 
